@@ -1,0 +1,13 @@
+<a href="{% url userena_signup %}">Registrarse</a>
+
+<a href="{% url userena_signin %}">Identificarse</a>
+
+{% load facebook %}
+{% facebook_button %}
+
+{% load twitter %}
+{% twitter_button %}
+
+{% load openid %}
+{% openid_form 'https://www.google.com/accounts/o8/id' %}
+
