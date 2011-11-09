@@ -1,0 +1,11 @@
+*.pyc
+.project
+.git
+.pydevproject
+virtualme/*
+.settings
+src/fixtures/*
+src/fixtures/dev_appserver.datastore
+src/webapp/settings.py
+*deployme*
+db
