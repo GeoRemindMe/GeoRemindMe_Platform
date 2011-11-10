@@ -10,13 +10,13 @@ js_info_dict = {
 
 
 urlpatterns = patterns('',
-   url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict, 'jsi18n'),
-   url(r'^accounts/', include('userena.urls')),
-   url(r'^messages/', include('userena.contrib.umessages.urls')),
-   url(r'^social/', include('socialregistration.urls',namespace = 'socialregistration')),
-   url(r'^notifications/', include('timelines.urls')), # notificaciones timeline
    url(r'', include('profiles.urls')), # perfiles
-   url(r'', include('mainApp.urls')),
+   url(r'', include('mainApp.urls')), # aplicacion principal
+   url(r'^notifications/', include('timelines.urls')), # notificaciones timeline
+   url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict, 'jsi18n'), # i18n para javascript
+   #url(r'^accounts/', include('userena.urls')), # userena
+   url(r'^messages/', include('userena.contrib.umessages.urls')), # framework de mensajes de userena
+   url(r'^social/', include('socialregistration.urls',namespace = 'socialregistration')), # socialregistration
    url(r'^sentry/', include('sentry.web.urls')),
    url(r'^admin/', include(admin.site.urls)),
    url(r'^admin_tools/', include('admin_tools.urls')),

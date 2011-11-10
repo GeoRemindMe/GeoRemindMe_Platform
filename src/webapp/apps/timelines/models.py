@@ -8,7 +8,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 
 from signals import timeline_added, follower_added, follower_deleted
-from funcs import BatchInsertQuery
 
 
 class NotificationSettings(models.Model):
@@ -44,8 +43,8 @@ class NotificationSettings(models.Model):
 #------------------------------------------------------------------------------ 
 class FollowerManager(models.Manager):
     def is_follower(self, follower, followee, **kwargs):
-        follower_type = ContentType.objects.get_for_model(type(follower))
-        followee_type = ContentType.objects.get_for_model(type(followee))
+        follower_type = ContentType.objects.get_for_model(follower)
+        followee_type = ContentType.objects.get_for_model(followee)
         
         return self.filter(follower_id=follower.id,  
                         follower_c_type=follower_type,
@@ -54,32 +53,36 @@ class FollowerManager(models.Manager):
         
     def toggle_follower(self, follower, followee, **kwargs):
         if follower == followee:
-            return True
-        follower_type = ContentType.objects.get_for_model(type(follower))
-        followee_type = ContentType.objects.get_for_model(type(followee))
+            return None
+        follower_type = ContentType.objects.get_for_model(follower)
+        followee_type = ContentType.objects.get_for_model(followee)
         
         q = self.filter(follower_id=follower.id, follower_c_type=follower_type,
                                   followee_id=followee.id, followee_c_type=followee_type)
         
         if q.exists():
             try:
-                self.q.delete()
-                follower_deleted.send(follower=follower, followee=followee)
+                q.delete()
+                follower_deleted.send(sender=follower, followee=followee)
+                return False
             except:
+                raise
                 pass
-            return False
+            
         else:
             try:
                 self.create(follower=follower, followee=followee, **kwargs)
-                follower_added.send(follower=follower, followee=followee)
+                follower_added.send(sender=follower, followee=followee)
+                return True
             except:
+                raise
                 pass
-            return True
+        return None
     
     def get_by_follower(self, follower, type_filter=None):
-        follower_type = ContentType.objects.get_for_model(type(follower))
+        follower_type = ContentType.objects.get_for_model(follower)
         if type_filter is not None:
-            followee_type = ContentType.objects.get_for_model(type(type_filter))
+            followee_type = ContentType.objects.get_for_model(type_filter)
             return self.filter(follower_id=follower.id, 
                                 follower_c_type=follower_type,
                                 followee_c_type=followee_type).select_related(depth=1)
@@ -88,10 +91,10 @@ class FollowerManager(models.Manager):
                                 follower_c_type=follower_type).select_related(depth=1)
                                 
     def get_by_followee(self, followee, type_filter=None):
-        followee_type = ContentType.objects.get_for_model(type(followee))
+        followee_type = ContentType.objects.get_for_model(followee)
         if type_filter is not None:
-            followee_type = ContentType.objects.get_for_model(type(type_filter))
-            return self.filter(follower_id=followee.id, 
+            followee_type = ContentType.objects.get_for_model(type_filter)
+            return self.filter(followee_id=followee.id, 
                                 follower_c_type=followee_type,
                                 followee_c_type=followee_type).select_related(depth=1)
         else:
@@ -120,6 +123,9 @@ class Follower(models.Model):
         unique_together = (("follower_c_type", "follower_id", "followee_c_type", "followee_id"),)
         verbose_name = _('Seguimiento')
         verbose_name_plural = _('Seguimientos')
+        
+    def __unicode__(self):
+        return "%s - %s - %s" % (self.follower, self.followee, self.created)
 
 
 #------------------------------------------------------------------------------ 
@@ -132,11 +138,11 @@ class TimelineManager(models.Manager):
                     **kwargs)
         # el usuario sigue a sus propios timelines
         TimelineFollower.objects.create(timeline=timeline, follower=user)
-        timeline_added.send(timeline)
+        timeline_added.send(sender=timeline)
         
     def del_all_timelines(self, user, msg_id, instance):
-        instance_type = ContentType.objects.get_for_model(type(instance))
-        return self.filter(user_id = user.id,
+        instance_type = ContentType.objects.get_for_model(instance)
+        return self.filter(user = user,
                     msg_id = msg_id,
                     content_type = instance_type,
                     object_id = instance.id
@@ -155,8 +161,8 @@ class TimelineManager(models.Manager):
             :returns: Iterator
             
         """
-        c_type = ContentType.objects.get_for_model(type(instance))
-        return self.filter(instance_id=object.id, content_type=c_type, visible=visible)#.iterator()
+        c_type = ContentType.objects.get_for_model(instance)
+        return self.filter(instance_id=object.id, content_type=c_type, visible=visible).select_related()#.iterator()
     
     def get_by_user(self, user, visible=True, all=False):
         """
@@ -168,10 +174,14 @@ class TimelineManager(models.Manager):
             :type visible: :class:`Boolean`
             
         """
-        if not all:
-            return self.filter(user=user, visible=visible)#.iterator()
+        if isinstance(user, basestring):
+            q = self.filter(user__username__iexact = user)
         else:
-            return self.filter(user=user)#.iterator()
+            q = self.filter(user = user)
+        if not all:
+            return q.filter(visible=visible).select_related()#.iterator()
+        else:
+            return q.select_related()#.iterator()
     
     def get_chronology(self, user):
         """
@@ -180,9 +190,9 @@ class TimelineManager(models.Manager):
             :param user: Usuario a buscar
             :type user: :class:`django.contrib.auth.User`
         """
-        user_type = ContentType.objects.get_for_model(type(user))
+        user_type = ContentType.objects.get_for_model(user)
         return self.filter(timelinefollower__follower_c_type = user_type,
-                                       timelinefollower__follower_id = user.id)
+                                       timelinefollower__follower_id = user.id).select_related()
         
 
 
@@ -303,20 +313,21 @@ class Timeline(models.Model):
         
 
 #------------------------------------------------------------------------------ 
+from django.db import transaction
+
 class TimelineFollowerManager(models.Manager):
-    def batch_insert( self, *instances ):
-        """
-        Issues a batch INSERT using the specified model instances.
-        """
-        cls = instances[0].__class__
-        query = BatchInsertQuery( cls, connection)
-        for instance in instances:
-            values = [ (f, f.get_db_prep_save( f.pre_save( instance, True ) ) ) \
-                 for f in cls._meta.local_fields ]
-            query.insert_values( values )
-
-        return query.execute_sql()
-
+    @transaction.commit_manually
+    def bulk_create(self, instances):
+        # TODO : EN VERSION DE DESARROLLO DE DJANGO, YA EXISTE, INSERTA OBJETOS POR LOTES
+        try:
+            for instance in instances:
+                instance.save()
+        except:
+            raise
+            transaction.rollback()
+        else:
+            transaction.commit()
+        
 
 class TimelineFollower(models.Model):
     timeline = models.ForeignKey(Timeline,
@@ -340,3 +351,5 @@ class TimelineFollower(models.Model):
         
     def __unicode__(self):
         return "%s - %d - %s" % (self.follower, self.timeline_id, self.created)
+    
+from tasks import share_timeline

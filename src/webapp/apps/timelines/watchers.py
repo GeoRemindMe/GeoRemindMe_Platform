@@ -37,17 +37,17 @@ def create_notificationssettings(sender, instance, created, **kwargs):
 
 
 @receiver(follower_added)
-def new_follower(sender, follower, followee, **kwargs):
-    Timeline.objects.add_timeline(follower, 
+def new_follower(sender,  followee, **kwargs):
+    Timeline.objects.add_timeline(sender, 
                                   msg_id=100,
                                   instance=followee,
                                   visible=True)
-    DEBUG('TIMELINE: %s ahora sigue a %s' % (follower, followee))
+    DEBUG('TIMELINE: %s ahora sigue a %s' % (sender, followee))
           
 
 @receiver(follower_deleted)
-def deleted_follower(sender, follower, followee, **kwargs):
-    Timeline.objects.del_all_timelines(user = follower,
+def deleted_follower(sender, followee, **kwargs):
+    Timeline.objects.del_all_timelines(user = sender,
                                        msg_id = 100,
                                        instance = followee)
-    DEBUG('TIMELINE: %s ya no sigue a %s' % (follower, followee))
+    DEBUG('TIMELINE: %s ya no sigue a %s' % (sender, followee))

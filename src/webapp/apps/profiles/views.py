@@ -5,20 +5,26 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from monkeys import *
+from profiles.monkeys import *
 from userena.views import profile_detail as userena_profile_detail
 from userena.views import profile_edit as userena_profile_edit
+from endless_pagination.decorators import page_template
 
-from forms import UserProfileForm
-from timelines.models import Timeline
+from profiles.forms import UserProfileForm
+from timelines.models import Timeline, Follower
 
 
 @login_required
-def dashboard(request):
-    # TODO : (jneight) pintar timeline privado
-    chrono = Timeline.objects.get_chronology(user=request.user)
-    return render_to_response('profiles/dashboard.html',
-                              {'timeline': chrono,},
+@page_template("profiles/dashboard_index_page.html")
+def dashboard(request, extra_context=None):
+    context = {
+               'timelines' : Timeline.objects.get_chronology(user=request.user),
+               }
+    #Timeline.objects.add_timeline(request.user, 5, request.user, visible=True)    
+    if extra_context is not None:
+        context.update(extra_context)
+    return render_to_response("profiles/dashboard.html",
+                              context,
                               context_instance = RequestContext(request))
 
 @login_required
@@ -28,8 +34,16 @@ def profile_edit(request, username):
                                 username=username, 
                                 edit_profile_form=form)
 
-def profile_detail(request, username):
+@page_template("profiles/profile_detail_index_page.html")
+def profile_detail(request, username, extra_context=None):
     # TODO : (jneight) pintar timeline publico
-    timeline = Timeline.objects.get_by_user(user = request.user,
+    context = {
+               'timelines' : Timeline.objects.get_by_user(user = username,
                                             visible = True)
-    return userena_profile_detail(request, username=username, extra_context = {'timeline': timeline})
+               }
+    if extra_context is not None:
+        context.update(extra_context)
+    return userena_profile_detail(request, 
+                                  username=username, 
+                                  template_name='profiles/profile_detail.html',
+                                  extra_context = context)

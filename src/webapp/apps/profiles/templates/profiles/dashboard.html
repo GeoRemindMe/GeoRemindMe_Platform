@@ -1,1 +1,10 @@
-{{ timeline }}
+{% load endless %}
+{% load timelines_tags %}
+
+{% paginate timelines %}
+
+<h2>Timeline:</h2>
+{% for timeline in timelines %}
+    {% timeline_item timeline %}
+{% endfor %}
+{% show_pages %}

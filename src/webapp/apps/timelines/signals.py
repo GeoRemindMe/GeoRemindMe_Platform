@@ -2,7 +2,7 @@
 
 from django.dispatch import Signal
 
-timeline_added = Signal(providing_args=["timeline",])
+timeline_added = Signal(providing_args=[])
 
-follower_added = Signal(providing_args=["follower, followee"])
-follower_deleted = Signal(providing_args=["follower, followee"])
+follower_added = Signal(providing_args=["followee"])
+follower_deleted = Signal(providing_args=["followee"])

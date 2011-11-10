@@ -1,0 +1,24 @@
+{% load tags %}
+{% load i18n %}
+
+{% comment %} 
+    Mensaje nº 0
+    0: Mensaje de bienvenida
+{% endcomment %}
+
+<li class="msg-{{obj.msg_id}}">
+    
+    <div class="avatar">
+        <a href="{% url2 in_facebook profiles_profile_public 'georemindme' %}" title="GeoRemindMe">
+            <img src="{% embedded_avatar 'georemindme' %}" alt="avatar"/>
+        </a>
+    </div>
+
+    <div class="timeline-msg">
+        <span class="timeline-icon">&nbsp;</span>
+        {% url2 in_facebook profiles_profile_public request.user.username as profile_url %}
+        <p>{% trans '¡Genial! ya has creado <a href="{{profile_url}}">tu cuenta</a> en GeoRemindMe, <strong>ya puedes empezar a recibir y enviar sugerencias</strong>.' %}</p>
+        <p>{% trans 'Aquí te dejamos un video de introducción a la plaforma:' %}</p>
+        <span class="timestamp"> {{obj.created|naturaltime}}</span>  
+    </div>
+</li>

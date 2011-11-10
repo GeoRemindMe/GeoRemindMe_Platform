@@ -1,0 +1,20 @@
+{% load tags %}
+{% load i18n %}
+{% comment %} 
+    Mensaje nº 102
+    102: Dejas de seguir
+{% endcomment %} 
+
+
+
+<li class="msg-{{obj.msg_id}}">
+    <div class="avatar">
+        <a href="{% url2 in_facebook profiles_profile_public obj.instance %}" title="{{obj.instance}}">
+            <img src="{% embedded_avatar obj.instance %}" alt="{{obj.instance}} avatar"/>
+        </a>
+    </div>
+    has dejado de seguir a <a href="{% url2 in_facebook profiles_profile_public obj.instance %}">{{obj.instance}}</a>.<br>
+
+
+    <span class="timestamp">  {{obj.created|naturaltime}}</span>  
+</li>

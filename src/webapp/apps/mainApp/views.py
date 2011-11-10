@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 
 def home(request, login=False):
     if request.user.is_authenticated():
-            return HttpResponseRedirect(request.user.get_absolute_url())
+            return HttpResponseRedirect(reverse('profiles_dashboard'))
     return render_to_response("mainApp/home.html", 
                               {'login' : login}, 
                               context_instance=RequestContext(request)

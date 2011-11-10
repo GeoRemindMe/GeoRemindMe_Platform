@@ -1,0 +1,69 @@
+{% load tags %}
+{% load i18n %}
+{% comment %} 
+    Mensaje nº 120
+    120: Ha hecho un comentario en una sugerencia | UT
+{% endcomment %} 
+
+
+
+<li class="msg-{{obj.msg_id}}">
+    
+    {% if obj.instance.user.username = request.user.username %}
+        <div class="avatar">
+            <a href="{% url2 in_facebook profiles_profile_public request.user %}" title="{{request.user}}">
+                <img class="user-picture" src="{% embedded_avatar request.user.username %}" alt="{{request.user}} avatar"/>
+            </a>
+        </div>
+        
+        <div class="timeline-msg">
+            <span class="timeline-icon">&nbsp;</span>
+            <div class="removable" value="{{obj.instance.id}}" type="comment"><a href="#">{% trans 'Borrar' %}</a></div>
+            <span class="small-text">{% trans 'Has comentado:' %}</span><br>
+    {% else %}
+        <div class="avatar">
+            <a href="{% url2 in_facebook profiles_profile_public obj.instance.user.username %}" title="{{obj.instance.user.username}}">
+                <img class="user-picture" src="{% embedded_avatar obj.instance.user.username %}" alt="{{obj.instance.user.username}} avatar"/>
+            </a>
+        </div>
+        <div class="timeline-msg">
+            <span class="timeline-icon">&nbsp;</span>
+            <span class="small-text"><a href="{% url2 in_facebook profiles_profile_public obj.instance.user.username %}" class="dark-link">{{obj.instance.user.username}}</a> {% trans 'ha comentado:</span>' %}<br>
+    {% endif %}
+            
+
+            <em class="comment">{{obj.instance.msg}}</em><br>
+
+
+            <span class="small-text">
+            
+            {% if obj.instance.instance.user.username = request.user.username %}
+                {% trans "En <strong>tu sugerencia</strong>" %}
+            {% else %}
+                {% trans "En la sugerencia" %}
+            {% endif %}
+            : <a href="{% url2 in_facebook view_suggestion obj.instance.instance.id %}" class="small-link dark-link">{{obj.instance.instance.name|truncatewords:10}}</a></span><br>
+        
+            
+            <span class="timestamp">  {{obj.created|naturaltime}}</span>
+            <span class="action-bar">
+                {% if obj.instance.user.username != request.user.username %}
+                    | 
+                    <span class="like-dislike" value="{{obj.instance.id}}" {% if obj.has_voted %}like="true"{%endif%} type="comment">
+                        <img src="/static/common/img/transparent.gif" />
+                        <span class="dislike">
+                            <span class="hoverlink">{% trans 'Ya no me gusta' %}</span> 
+<!--
+                            <span class="text like-text {% if not obj.has_voted %}increase{% endif %}">{{obj.vote_counter}}</span> personas
+-->
+                        </span>
+                        
+                        <span class="like">
+                            {% trans 'Me gusta' %}
+                        </span>
+                    </span>
+                {% endif %}
+                | <a href="{% url2 in_facebook view_suggestion obj.instance.instance.id %}" class="details"><img src="/static/common/img/transparent.gif" />{% trans 'Ver sugerencia' %}</a> 
+            </span>
+        </div>
+</li>
