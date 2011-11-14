@@ -19,6 +19,12 @@ class FacebookProfile(models.Model):
     def authenticate(self):
         return authenticate(uid=self.uid)
     
+    def get_avatar_url(self, secure=True):
+        if secure:
+            return 'https://www.facebook.com/%s/picture/' % self.uid
+        else:
+            return 'http://www.facebook.com/%s/picture/' % self.uid
+    
 class FacebookAccessToken(models.Model):
     profile = models.OneToOneField(FacebookProfile, related_name='access_token')
     access_token = models.CharField(max_length=255)

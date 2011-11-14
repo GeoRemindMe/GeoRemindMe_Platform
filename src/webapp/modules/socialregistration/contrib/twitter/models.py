@@ -1,8 +1,16 @@
+# coding=utf-8
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db import models
+from django.utils import simplejson
+from django.http import Http404
+
 from socialregistration.signals import connect
+
+from client import Twitter
+
 
 class TwitterProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
@@ -17,6 +25,17 @@ class TwitterProfile(models.Model):
 
     def authenticate(self):
         return authenticate(twitter_id=self.twitter_id)
+    
+    def get_avatar_url(self, secure=True):
+        accessToken = TwitterAccessToken.objects.get(profile = self)
+        if accessToken is None:
+            raise Http404
+        client = Twitter(access_token=accessToken.oauth_token,
+                         access_token_secret=accessToken.oauth_token_secret
+                         )
+        info = simplejson.loads(client.get_user_info())
+        return info['profile_image_url']
+    
 
 class TwitterRequestToken(models.Model):
     profile = models.OneToOneField(TwitterProfile, related_name='request_token')

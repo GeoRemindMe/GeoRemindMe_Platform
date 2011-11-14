@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
@@ -26,5 +28,12 @@ class Twitter(OAuth):
         return 'socialreg:twitter'
 
     def get_user_info(self):
-        return self._access_token_dict
+        if self._access_token_dict is not None:
+            return self._access_token_dict
+        else:
+            return self._do_request(url='http://api.twitter.com/1/users/show.json/')
+            
+    def _do_request(self, url):
+        content = self.request(url)
+        return content
 

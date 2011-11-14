@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from django import forms
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from userena.forms import USERNAME_RE
 
@@ -19,13 +19,15 @@ class UserProfileForm(forms.ModelForm):
                                 max_length=15,
                                 min_length=4,
                                 widget=forms.TextInput(attrs={'class': 'required'}),
-                                label=_("Username"),
-                                error_messages={'invalid': _('Username must contain only letters, numbers, dots and underscores.')})
+                                label=_(u"Nombre de usuario"),
+                                error_messages={'invalid': _(u"El nombre de usuario solo "\
+                                                             "debe tener letras, numeros, "\
+                                                             "numeros, puntos o guiones bajos")})
     class Meta:
         model = UserProfile
         fields = ('mugshot', 'show_followers', 'show_followings', 
-                  'language', 'privacy')
-        exclude = ('user', 'privacy')
+                  'language', 'privacy', 'sync_avatar_with', 'privacy')
+        exclude = ('user')
         
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)

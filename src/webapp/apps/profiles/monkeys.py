@@ -87,7 +87,7 @@ def monkey_profile_edit(request, username, edit_profile_form=EditProfileForm,
                                  fail_silently=True)
 
             if success_url: redirect_to = success_url
-            else: redirect_to = reverse('userena_profile_detail', kwargs={'username': user.username})
+            else: redirect_to = reverse('profiles_profile_public', kwargs={'username': user.username})
             return redirect(redirect_to)
 
     if not extra_context: extra_context = dict()

@@ -5,7 +5,7 @@ from django.db import models, connection
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from signals import timeline_added, follower_added, follower_deleted
 
@@ -20,7 +20,7 @@ class NotificationSettings(models.Model):
     )
     user = models.OneToOneField(User,
                                 unique=True,
-                                verbose_name=_('usuario'),
+                                verbose_name=_(u'usuario'),
                                 related_name='notification_settings')
     
     notification_invitation = models.PositiveSmallIntegerField(choices=TIME_CHOICES,
@@ -103,15 +103,15 @@ class FollowerManager(models.Manager):
 
 class Follower(models.Model):
     follower_c_type = models.ForeignKey(ContentType,
-                                        verbose_name = _("Tipo de objeto seguidor"),
+                                        verbose_name = _(u"Tipo de objeto seguidor"),
                                         related_name = "followings")
-    follower_id = models.PositiveIntegerField(_("Identificador del seguidor"))
+    follower_id = models.PositiveIntegerField(_(u"Identificador del seguidor"))
     follower = generic.GenericForeignKey('follower_c_type', 'follower_id',) # clave generica para cualquier modelo
 
     followee_c_type = models.ForeignKey(ContentType,
-                                     verbose_name = _("Tipo de objeto seguido"),
+                                     verbose_name = _(u"Tipo de objeto seguido"),
                                      related_name = "followers")
-    followee_id = models.PositiveIntegerField(_("Identificador del seguido"))
+    followee_id = models.PositiveIntegerField(_(u"Identificador del seguido"))
     followee = generic.GenericForeignKey('followee_c_type', 'followee_id',) # clave generica para cualquier modelo
     
     created = models.DateTimeField(auto_now_add=True)
@@ -121,8 +121,8 @@ class Follower(models.Model):
         get_latest_by = "created"
         ordering = ['-created']
         unique_together = (("follower_c_type", "follower_id", "followee_c_type", "followee_id"),)
-        verbose_name = _('Seguimiento')
-        verbose_name_plural = _('Seguimientos')
+        verbose_name = _(u"Seguimiento")
+        verbose_name_plural = _(u"Seguimientos")
         
     def __unicode__(self):
         return "%s - %s - %s" % (self.follower, self.followee, self.created)
@@ -278,19 +278,19 @@ class Timeline(models.Model):
     ##
     user = models.ForeignKey(User,
                              blank=False,
-                             verbose_name=_("Usuario")
+                             verbose_name=_(u"Usuario")
                              )
-    msg_id = models.PositiveSmallIntegerField(_("Tipo de mensaje"))
+    msg_id = models.PositiveSmallIntegerField(_(u"Tipo de mensaje"))
     content_type = models.ForeignKey(ContentType,
-                                     verbose_name = _("Tipo de instancia"))
-    object_id = models.PositiveIntegerField(_("Identificador de instancia"))
+                                     verbose_name = _(u"Tipo de instancia"))
+    object_id = models.PositiveIntegerField(_(u"Identificador de instancia"))
     instance = generic.GenericForeignKey('content_type', 'object_id') # clave generica para cualquier modelo    
-    visible = models.BooleanField(_("Visible en perfil publico"),
+    visible = models.BooleanField(_(u"Visible en perfil publico"),
                                   default=True,
                                   )
-    created = models.DateTimeField(_("Creado"),
+    created = models.DateTimeField(_(u"Creado"),
                                    auto_now_add=True)
-    modified = models.DateTimeField(_("Modificado"),
+    modified = models.DateTimeField(_(u"Modificado"),
                                       auto_now=True)
     
     objects = TimelineManager()
@@ -298,8 +298,8 @@ class Timeline(models.Model):
     class Meta:
         get_latest_by = "created"
         ordering = ['-created']
-        verbose_name = _('Timeline')
-        verbose_name_plural = _('Timelines')
+        verbose_name = _(u"Timeline")
+        verbose_name_plural = _(u"Timelines")
         
     def save(self, *args, **kwargs):
         super(self.__class__, self).save(*args, **kwargs)
@@ -308,7 +308,7 @@ class Timeline(models.Model):
         return "%s - %d - %s" % (self.user, self.id, self.modified)
     
     def delete(self, *args, **kwargs):
-        TimelineFollower.objects.filter(timeline_id=self.id).delete()
+        TimelineFollower.objects.filter(timeline=self).delete()
         super(self.__class__, self).delete()
         
 
@@ -334,9 +334,9 @@ class TimelineFollower(models.Model):
                                  blank=False)
     
     follower_c_type = models.ForeignKey(ContentType,
-                                        verbose_name = _("Tipo de objeto seguidor"),
+                                        verbose_name = _(u"Tipo de objeto seguidor"),
                                         related_name = "timelinefollowings")
-    follower_id = models.PositiveIntegerField(_("Identificador del seguidor"))
+    follower_id = models.PositiveIntegerField(_(u"Identificador del seguidor"))
     follower = generic.GenericForeignKey('follower_c_type', 'follower_id',) # clave generica para cualquier modelo
     
     created = models.DateTimeField(auto_now_add=True)
@@ -346,8 +346,8 @@ class TimelineFollower(models.Model):
         get_latest_by = "created"
         ordering = ['-created']
         unique_together = (("timeline", "follower_c_type", "follower_id"),)
-        verbose_name = _('Notificacion de Timeline')
-        verbose_name_plural = _('Notificaciones de Timelines')
+        verbose_name = _(u"Notificacion de Timeline")
+        verbose_name_plural = _(u"Notificaciones de Timelines")
         
     def __unicode__(self):
         return "%s - %d - %s" % (self.follower, self.timeline_id, self.created)

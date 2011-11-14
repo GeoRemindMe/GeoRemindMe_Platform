@@ -1,3 +1,4 @@
+# coding=utf-8
 """
     django templates tags for images
     @author: R. BECK
