@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding=utf-8
 
 from django.http import HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
@@ -23,6 +23,10 @@ from watchers import *
 @login_required
 @page_template("profiles/dashboard_index_page.html")
 def dashboard(request, extra_context=None):
+#    try:
+#        request.user.get_profile()
+#    except:
+#        UserProfile.objects.create(user=request.user)
     context = {
                'timelines' : Timeline.objects.get_chronology(user=request.user),
                }
@@ -34,7 +38,7 @@ def dashboard(request, extra_context=None):
                               context_instance = RequestContext(request))
 
 @login_required
-def profile_edit(request, username):    
+def profile_edit(request, username):
     form = UserProfileForm
     return userena_profile_edit(request, 
                                 username=username, 
@@ -43,7 +47,6 @@ def profile_edit(request, username):
 
 @page_template("profiles/profile_detail_index_page.html")
 def profile_detail(request, username, extra_context=None):
-    # TODO : (jneight) pintar timeline publico
     context = {
                'timelines' : Timeline.objects.get_by_user(user = username,
                                             visible = True)

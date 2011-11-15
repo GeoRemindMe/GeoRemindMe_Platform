@@ -8,6 +8,8 @@ js_info_dict = {
     'packages': ('webapp',),
 }
 
+from events.models import *
+
 
 urlpatterns = patterns('',
    url(r'', include('profiles.urls')), # perfiles
@@ -20,4 +22,5 @@ urlpatterns = patterns('',
    url(r'^sentry/', include('sentry.web.urls')),
    url(r'^admin/', include(admin.site.urls)),
    url(r'^admin_tools/', include('admin_tools.urls')),
+   url(r'^translations/', include('datatrans.urls')),
 )
