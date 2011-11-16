@@ -11,16 +11,18 @@ class Migration(SchemaMigration):
         # Adding model 'Suggestion'
         db.create_table('events_suggestion', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('_vis', self.gf('django.db.models.fields.CharField')(default='public', max_length=10)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=170)),
             ('description', self.gf('django.db.models.fields.TextField')(max_length=1024)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('place', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['places.Place'])),
-            ('date_starts', self.gf('django.db.models.fields.DateTimeField')()),
-            ('date_ends', self.gf('django.db.models.fields.DateTimeField')()),
+            ('date_starts', self.gf('django.db.models.fields.DateTimeField')(blank=True)),
+            ('date_ends', self.gf('django.db.models.fields.DateTimeField')(blank=True)),
             ('done', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('slug', self.gf('webapp.site.fields.AutoSlugField')(populate_from=['name', 'place'], allow_duplicates=False, max_length=50, separator=u'-', blank=True, unique=True, overwrite=False, db_index=True)),
+            ('slug', self.gf('fields.AutoSlugField')(populate_from=['name', 'place'], allow_duplicates=False, max_length=50, separator=u'-', blank=True, unique=True, overwrite=False, db_index=True)),
+            ('_short_url', self.gf('django.db.models.fields.URLField')(max_length=200)),
         ))
         db.send_create_signal('events', ['Suggestion'])
 
@@ -100,17 +102,19 @@ class Migration(SchemaMigration):
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'events_followed'", 'to': "orm['auth.User']"})
         },
         'events.suggestion': {
-            'Meta': {'ordering': "['name', 'created', 'modified']", 'object_name': 'Suggestion'},
+            'Meta': {'object_name': 'Suggestion'},
+            '_short_url': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
+            '_vis': ('django.db.models.fields.CharField', [], {'default': "'public'", 'max_length': '10'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'date_ends': ('django.db.models.fields.DateTimeField', [], {}),
-            'date_starts': ('django.db.models.fields.DateTimeField', [], {}),
+            'date_ends': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'}),
+            'date_starts': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'max_length': '1024'}),
             'done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '170'}),
             'place': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['places.Place']"}),
-            'slug': ('webapp.site.fields.AutoSlugField', [], {'populate_from': "['name', 'place']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'}),
+            'slug': ('fields.AutoSlugField', [], {'populate_from': "['name', 'place']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         },
         'places.city': {
@@ -121,7 +125,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             'population': ('django.db.models.fields.IntegerField', [], {}),
             'region': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'cities'", 'to': "orm['places.Region']"}),
-            'slug': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'unique': 'True', 'max_length': '150', 'blank': 'True'})
+            'slug': ('fields.AutoSlugField', [], {'populate_from': "['name', 'region']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'})
         },
         'places.country': {
             'Meta': {'ordering': "['name']", 'object_name': 'Country'},
@@ -143,8 +147,9 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'db_index': 'True'}),
             'num': ('django.db.models.fields.IntegerField', [], {}),
             'phone': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
-            'slug': ('webapp.site.fields.AutoSlugField', [], {'populate_from': "['name', 'city']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'}),
+            'slug': ('fields.AutoSlugField', [], {'populate_from': "['name', 'city']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
+            'url': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'places'", 'to': "orm['auth.User']"})
         },
         'places.region': {
@@ -154,7 +159,7 @@ class Migration(SchemaMigration):
             'country': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'regions'", 'to': "orm['places.Country']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'slug': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'unique': 'True', 'max_length': '150', 'blank': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'max_length': '150', 'blank': 'True'})
         }
     }
 

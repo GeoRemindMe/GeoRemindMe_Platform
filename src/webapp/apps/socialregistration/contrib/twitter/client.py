@@ -32,8 +32,20 @@ class Twitter(OAuth):
             return self._access_token_dict
         else:
             return self._do_request(url='http://api.twitter.com/1/users/show.json/')
-            
-    def _do_request(self, url):
-        content = self.request(url)
+        
+    def tweet(self, msg, poi=None, wrap_links=False):
+        body = {
+                'status': msg.encode('utf-8'),
+                }
+        if poi is not None:
+            body['lat'] = poi.location.y
+            body['lon'] = poi.location.x
+        body['wrap_links'] = 'true' if wrap_links else 'false'
+        
+        from urllib import urlencode
+        return self._do_request('https://api.twitter.com/1/statuses/update.json/', method='POST', body=urlencode(body))
+
+    def _do_request(self, url, **kwargs):
+        content = self.request(url, **kwargs)
         return content
 

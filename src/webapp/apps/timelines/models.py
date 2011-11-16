@@ -178,7 +178,7 @@ class TimelineManager(models.Manager):
             q = self.filter(user__username__iexact = user)
         else:
             q = self.filter(user = user)
-        if not all:
+        if not all: # todo el timeline, visible y no visible
             return q.filter(visible=visible).select_related()#.iterator()
         else:
             return q.select_related()#.iterator()

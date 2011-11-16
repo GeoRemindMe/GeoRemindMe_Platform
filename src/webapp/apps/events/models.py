@@ -8,6 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from fields import AutoSlugField
 from places.models import Place
+from signals import suggestion_new
+from webapp.site.models_utils import Visibility
 
 class Event(models.Model):
     name = models.CharField(_(u"Nombre"), max_length=170)
@@ -25,17 +27,57 @@ class Event(models.Model):
         ordering = ['name', 'created', 'modified']
         
     def __unicode__(self):
-        return self.name
+        return unicode(self.name)
 
 
-class Suggestion(Event):
+#------------------------------------------------------------------------------ 
+class SuggestionManager(models.Manager):
+    def create(self, **kwargs):
+        to_facebook = kwargs.get('to_facebook', False)
+        to_twitter = kwargs.get('to_twitter', False)
+        if 'to_facebook' in kwargs:
+            del kwargs['to_facebook']
+        if 'to_twitter' in kwargs:
+            del kwargs['to_twitter']
+        obj = super(self.__class__, self).create(**kwargs)
+        suggestion_new.send(sender=obj, to_facebook=to_facebook, to_twitter=to_twitter)
+
+
+class Suggestion(Event, Visibility):
     slug = AutoSlugField(populate_from=['name', 'place'], max_length = 50, unique=True)
+    _short_url = models.URLField(_(u"Web"))
+    
+    
+    objects = SuggestionManager()
     
     class Meta:
         verbose_name = _(u"Sugerencia")
         verbose_name_plural = _(u"Sugerencias")
+        
+    @models.permalink
+    def get_absolute_url(self):
+        return ('suggestions_suggestion_detail', (), { 'slug': self.slug })
+    
+    @property
+    def short_url(self):
+        if self._short_url is None:
+            from django.contrib.sites.models import Site
+            from libs.vavag import VavagRequest
+            from django.conf import settings        
+            try:
+                current_site = Site.objects.get_current()
+                client = VavagRequest(settings.VAVAG_ACCESS['user'], settings.VAVAG_ACCESS['key'])
+                
+                response = client.set_pack('http://%s%s' % (current_site.domain, self.get_absolute_url()))
+                self._short_url = response['packUrl']
+                self.save()
+            except Exception:
+                self._short_url = None
+                return 'http://%s%s' % (current_site.domain, self.get_absolute_url())
+        return self._short_url
+        
 
-
+#------------------------------------------------------------------------------ 
 class EventFollower(models.Model):
     user = models.ForeignKey(User, verbose_name=_(u"Usuario"),
                              related_name="events_followed")
@@ -56,7 +98,7 @@ class EventFollower(models.Model):
         verbose_name_plural = _(u"Seguimientos de eventos")
         
     def __unicode__(self):
-        return "%s - %s - %s" % (self.user, self.event, self.created)
+        return u"%s - %s - %s" % (self.user, self.event, self.created)
     
     
 #===========================================================================

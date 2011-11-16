@@ -59,9 +59,11 @@ class UserProfile(UserenaLanguageBaseProfile):
         verbose_name = _(u"Perfil de usuario")
         verbose_name_plural = _(u"Perfiles de usuario")
     
+    
+    @models.permalink
     def get_absolute_url(self):
         return ('profiles_profile_public', (), { 'username': self.user.username })
-    get_absolute_url = models.permalink(get_absolute_url)
+    
     
     def get_mugshot_url(self):
         """
@@ -86,5 +88,3 @@ class UserProfile(UserenaLanguageBaseProfile):
             if twitter is not None:
                 return twitter.get_avatar_url()
         return #settings.DEFAULT_AVATAR
-
-

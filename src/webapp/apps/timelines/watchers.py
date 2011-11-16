@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 
 from models import Timeline, NotificationSettings
-from webapp.site.funcs import DEBUG
+from funcs import DEBUG
 from signals import follower_added, follower_deleted
         
 

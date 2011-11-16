@@ -27,10 +27,11 @@ def dashboard(request, extra_context=None):
 #        request.user.get_profile()
 #    except:
 #        UserProfile.objects.create(user=request.user)
+#    Timeline.objects.add_timeline(request.user, 0, request.user, visible=True)  
     context = {
                'timelines' : Timeline.objects.get_chronology(user=request.user),
                }
-    #Timeline.objects.add_timeline(request.user, 0, request.user, visible=True)   
+     
     if extra_context is not None:
         context.update(extra_context)
     return render_to_response("profiles/dashboard.html",

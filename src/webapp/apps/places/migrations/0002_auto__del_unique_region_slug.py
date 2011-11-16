@@ -8,14 +8,14 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Changing field 'Suggestion.slug'
-        db.alter_column('events_suggestion', 'slug', self.gf('fields.AutoSlugField')(populate_from=['name', 'place'], allow_duplicates=False, max_length=50, separator=u'-', unique=True, overwrite=False))
+        # Removing unique constraint on 'Region', fields ['slug']
+        db.delete_unique('places_region', ['slug'])
 
 
     def backwards(self, orm):
         
-        # Changing field 'Suggestion.slug'
-        db.alter_column('events_suggestion', 'slug', self.gf('webapp.site.fields.AutoSlugField')(allow_duplicates=False, max_length=50, separator=u'-', unique=True, populate_from=['name', 'place'], overwrite=False))
+        # Adding unique constraint on 'Region', fields ['slug']
+        db.create_unique('places_region', ['slug'])
 
 
     models = {
@@ -54,30 +54,6 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        'events.eventfollower': {
-            'Meta': {'ordering': "['-created']", 'unique_together': "(('user', 'event_c_type', 'event_id'),)", 'object_name': 'EventFollower'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'event_c_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'event_followers'", 'to': "orm['contenttypes.ContentType']"}),
-            'event_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'events_followed'", 'to': "orm['auth.User']"})
-        },
-        'events.suggestion': {
-            'Meta': {'object_name': 'Suggestion'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'date_ends': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'}),
-            'date_starts': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'}),
-            'description': ('django.db.models.fields.TextField', [], {'max_length': '1024'}),
-            'done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '170'}),
-            'place': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['places.Place']"}),
-            'slug': ('fields.AutoSlugField', [], {'populate_from': "['name', 'place']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         },
         'places.city': {
             'Meta': {'ordering': "('_order',)", 'object_name': 'City'},
@@ -120,8 +96,8 @@ class Migration(SchemaMigration):
             'country': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'regions'", 'to': "orm['places.Country']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'slug': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'unique': 'True', 'max_length': '150', 'blank': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'max_length': '150', 'blank': 'True'})
         }
     }
 
-    complete_apps = ['events']
+    complete_apps = ['places']

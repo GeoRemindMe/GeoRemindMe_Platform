@@ -26,26 +26,36 @@ class TwitterProfile(models.Model):
     def authenticate(self):
         return authenticate(twitter_id=self.twitter_id)
     
-    def get_avatar_url(self, secure=True):
-        accessToken = TwitterAccessToken.objects.get(profile = self)
-        if accessToken is None:
+    def _get_client(self):
+        try:
+            accessToken = self.access_token
+        except TwitterRequestToken.DoesNotExist:
             raise Http404
-        client = Twitter(access_token=accessToken.oauth_token,
+        return Twitter(access_token=accessToken.oauth_token,
                          access_token_secret=accessToken.oauth_token_secret
                          )
+    
+    def get_avatar_url(self, secure=True):
+        client = self._get_client()
         info = simplejson.loads(client.get_user_info())
         return info['profile_image_url']
     
+    def send_tweet(self, msg, poi, wrap_links=False):
+        client = self._get_client()
+        return simplejson.loads(client.tweet(msg=msg, poi=poi, wrap_links=wrap_links))
+        
 
 class TwitterRequestToken(models.Model):
     profile = models.OneToOneField(TwitterProfile, related_name='request_token')
     oauth_token = models.CharField(max_length=80)
     oauth_token_secret = models.CharField(max_length=80)
 
+
 class TwitterAccessToken(models.Model):
     profile = models.OneToOneField(TwitterProfile, related_name='access_token')
     oauth_token = models.CharField(max_length=80)
     oauth_token_secret = models.CharField(max_length=80)
+
     
 def save_twitter_token(sender, user, profile, client, **kwargs):
     try:

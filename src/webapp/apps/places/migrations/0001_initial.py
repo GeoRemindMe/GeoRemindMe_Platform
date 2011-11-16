@@ -23,7 +23,7 @@ class Migration(SchemaMigration):
         db.create_table('places_region', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=200)),
-            ('slug', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=200, db_index=True)),
+            ('slug', self.gf('django.db.models.fields.SlugField')(db_index=True, unique=True, max_length=150, blank=True)),
             ('code', self.gf('django.db.models.fields.CharField')(max_length=10, db_index=True)),
             ('country', self.gf('django.db.models.fields.related.ForeignKey')(related_name='regions', to=orm['places.Country'])),
             ('_order', self.gf('django.db.models.fields.IntegerField')(default=0)),
@@ -34,7 +34,7 @@ class Migration(SchemaMigration):
         db.create_table('places_city', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=200)),
-            ('slug', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=200, db_index=True)),
+            ('slug', self.gf('django.db.models.fields.SlugField')(db_index=True, unique=True, max_length=150, blank=True)),
             ('region', self.gf('django.db.models.fields.related.ForeignKey')(related_name='cities', to=orm['places.Region'])),
             ('location', self.gf('django.contrib.gis.db.models.fields.PointField')()),
             ('population', self.gf('django.db.models.fields.IntegerField')()),
@@ -46,7 +46,7 @@ class Migration(SchemaMigration):
         db.create_table('places_place', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=200, db_index=True)),
-            ('slug', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=200, db_index=True)),
+            ('slug', self.gf('fields.AutoSlugField')(populate_from=['name', 'city'], allow_duplicates=False, max_length=50, separator=u'-', blank=True, unique=True, overwrite=False, db_index=True)),
             ('location', self.gf('django.contrib.gis.db.models.fields.PointField')()),
             ('city', self.gf('django.db.models.fields.related.ForeignKey')(related_name='places', to=orm['places.City'])),
             ('street', self.gf('django.db.models.fields.CharField')(max_length=256)),
@@ -120,7 +120,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             'population': ('django.db.models.fields.IntegerField', [], {}),
             'region': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'cities'", 'to': "orm['places.Region']"}),
-            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '200', 'db_index': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'unique': 'True', 'max_length': '150', 'blank': 'True'})
         },
         'places.country': {
             'Meta': {'ordering': "['name']", 'object_name': 'Country'},
@@ -142,7 +142,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'db_index': 'True'}),
             'num': ('django.db.models.fields.IntegerField', [], {}),
             'phone': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
-            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '200', 'db_index': 'True'}),
+            'slug': ('fields.AutoSlugField', [], {'populate_from': "['name', 'city']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'}),
             'street': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'places'", 'to': "orm['auth.User']"})
         },
@@ -153,7 +153,7 @@ class Migration(SchemaMigration):
             'country': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'regions'", 'to': "orm['places.Country']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '200', 'db_index': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'unique': 'True', 'max_length': '150', 'blank': 'True'})
         }
     }
 

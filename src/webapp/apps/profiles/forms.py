@@ -27,7 +27,7 @@ class UserProfileForm(forms.ModelForm):
         model = UserProfile
         fields = ('mugshot', 'show_followers', 'show_followings', 
                   'language', 'privacy', 'sync_avatar_with', 'privacy')
-        exclude = ('user')
+        exclude = ('user', 'slug')
         
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)

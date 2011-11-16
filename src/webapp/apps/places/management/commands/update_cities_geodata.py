@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding=utf-8
 """
 GeoNames city data import script. Requires the following files:
 - http://download.geonames.org/export/dump/countryInfo.txt
@@ -18,6 +18,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 from django.template.defaultfilters import slugify
 from django.db.models import Count
+from django.db.utils import IntegrityError
 
 from places.models import *
 
@@ -32,7 +33,7 @@ def clear_data():
     #cursor.execute("TRUNCATE TABLE `places_city`")
     #cursor.execute("TRUNCATE TABLE `places_country`")
     cursor.execute("TRUNCATE TABLE places_region CASCADE")
-    cursor.execute("TRUNCATE TABLE places_district")
+    #cursor.execute("TRUNCATE TABLE places_district")
 
 
 def import_countries():
@@ -83,12 +84,14 @@ def import_regions():
     temp.seek(0)
 
     logger.info("Parsing regions data")
-
+    
     for line in temp: #codecs.open("admin1Codes.txt", "r", "utf-8"):
         if line[0] == "#":
             continue
 
         items = line.split("\t")
+        if items[1] == '':
+            continue
         region = Region()
         region.code = items[0]
         region.name = items[1].strip()
@@ -98,11 +101,12 @@ def import_regions():
         except:
             print "Cannot find country %s - skipping" % region.code[:2]
             continue
-
         region.save()
+       
         print "Added region %s" % (region.name,)
 
 def import_cities(data):
+    
     for line in data: #codecs.open("cities1000.txt", "r", "utf-8"):
         if len(line) < 1 or line[0] == "#":
             continue
@@ -139,6 +143,11 @@ def import_cities(data):
                     continue
             city.region = region
             try:
+                city.save()
+            except IntegrityError:
+                from django.db import transaction
+                transaction.rollback()
+                city.slug = slugify('%s-%s' % (city.name, region.slug))[0:150]
                 city.save()
             except:
                 continue
