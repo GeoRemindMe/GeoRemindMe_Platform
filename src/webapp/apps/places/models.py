@@ -4,9 +4,13 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from django.contrib.auth.models import User
-
 from django.utils.translation import ugettext_lazy as _
-from fields import AutoSlugField
+
+from timezones.fields import LocalizedDateTimeField
+from webapp.site.fields import AutoSlugField
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
 
 
 class Country(models.Model):
@@ -34,7 +38,7 @@ class Country(models.Model):
 #------------------------------------------------------------------------------ 
 class Region(models.Model):
 	name = models.CharField(_(u"Nombre"), max_length = 200)
-	slug = models.SlugField(max_length = 150, blank=True)
+	slug = models.SlugField(max_length = 150)
 	code = models.CharField(_(u"Codigo"), max_length = 10, db_index=True)
 	country = models.ForeignKey(Country, verbose_name=_(u"País"),
 							related_name='regions')
@@ -70,11 +74,11 @@ class CityManager(models.GeoManager):
 
 class City(models.Model):
 	name = models.CharField(_(u"Nombre"), max_length = 200)
-	slug = AutoSlugField(populate_from=['name', 'region'], max_length = 50, unique=True)
+	slug = AutoSlugField(populate_from=['name', 'region'], max_length = 50)
 	region = models.ForeignKey(Region, verbose_name=_(u"Región"),
 							related_name="cities")
-	location = models.PointField(_(u"Localización"))
-	population = models.IntegerField(_(u"Habitantes"))
+	location = models.PointField(_(u"Localización"), blank=True, null=True)
+	population = models.IntegerField(_(u"Habitantes"), blank=True, null=True)
 
 	objects = CityManager()
 
@@ -144,8 +148,8 @@ class PlaceManager(models.GeoManager):
 
 		
 class Place(models.Model):
-	name = models.CharField(_(u"Nombre"), max_length = 200, db_index=True, blank=False)
-	slug = AutoSlugField(populate_from=['name', 'city'], max_length = 50, unique=True)
+	name = models.CharField(_(u"Nombre"), max_length = 200, blank=False)
+	slug = AutoSlugField(populate_from=['name', 'city'], max_length = 50, db_index=True)
 	location = models.PointField(_(u"location"), blank=False)
 	city = models.ForeignKey(City, verbose_name=_(u"Ciudad"),
 							related_name="places")
@@ -162,8 +166,10 @@ class Place(models.Model):
 											blank=True,
 											db_index = True,
 											unique = True)
-	url = models.URLField(_(u"Web"))
-	_short_url = models.URLField(_(u"Atajo en vavag"))
+	url = models.URLField(_(u"Web"), blank=True)
+	_short_url = models.URLField(_(u"Atajo en vavag"), blank=True)
+	created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
+	modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
 	
 	objects = models.GeoManager()
 	

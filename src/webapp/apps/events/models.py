@@ -7,19 +7,23 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
 from fields import AutoSlugField
+from timezones.fields import LocalizedDateTimeField
 from places.models import Place
 from signals import suggestion_new
 from webapp.site.models_utils import Visibility
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
 
 class Event(models.Model):
     name = models.CharField(_(u"Nombre"), max_length=170)
     description = models.TextField(_(u"Descripción"), max_length=1024)
     user = models.ForeignKey(User, verbose_name=_(u"Usuario"))
-    created = models.DateTimeField(_(u"Creado"), auto_now_add=True)
-    modified = models.DateTimeField(_(u"Modificado"), auto_now=True)
+    created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
+    modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
     place = models.ForeignKey(Place, verbose_name=_(u"Sitio"))
-    date_starts = models.DateTimeField(_(u"Fecha finalización"), blank=True)
-    date_ends = models.DateTimeField(_(u"Fecha finalización"), blank=True)
+    date_starts = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True)
+    date_ends = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True)
     done = models.BooleanField(_(u"Finalizado"), default=False)
     
     class Meta:
@@ -87,8 +91,8 @@ class EventFollower(models.Model):
     event_id = models.PositiveIntegerField(_(u"Identificador del evento seguido"))
     event = generic.GenericForeignKey('event_c_type', 'event_id',) # clave generica para cualquier modelo
     done = models.BooleanField(_(u"Hecho"), default=False)
-    created = models.DateTimeField(_(u"Creado"), auto_now_add=True)
-    modified = models.DateTimeField(_(u"Modificado"), auto_now=True)
+    created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
+    modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
     
     class Meta:
         get_latest_by = "created"

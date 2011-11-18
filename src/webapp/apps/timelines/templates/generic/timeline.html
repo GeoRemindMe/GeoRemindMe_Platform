@@ -1,0 +1,9 @@
+{% load i18n %}
+{% url fb_notifications as notifications_section %}
+{% load timelines_tags %}
+{% load tags %}
+{% for obj in timelines %}
+    
+        {% timeline_item obj %}
+
+{% endfor %}

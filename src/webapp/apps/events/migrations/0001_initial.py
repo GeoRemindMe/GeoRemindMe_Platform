@@ -15,11 +15,11 @@ class Migration(SchemaMigration):
             ('name', self.gf('django.db.models.fields.CharField')(max_length=170)),
             ('description', self.gf('django.db.models.fields.TextField')(max_length=1024)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('created', self.gf('timezones.fields.LocalizedDateTimeField')(auto_now_add=True, blank=True)),
+            ('modified', self.gf('timezones.fields.LocalizedDateTimeField')(auto_now=True, blank=True)),
             ('place', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['places.Place'])),
-            ('date_starts', self.gf('django.db.models.fields.DateTimeField')(blank=True)),
-            ('date_ends', self.gf('django.db.models.fields.DateTimeField')(blank=True)),
+            ('date_starts', self.gf('timezones.fields.LocalizedDateTimeField')(blank=True)),
+            ('date_ends', self.gf('timezones.fields.LocalizedDateTimeField')(blank=True)),
             ('done', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('slug', self.gf('fields.AutoSlugField')(populate_from=['name', 'place'], allow_duplicates=False, max_length=50, separator=u'-', blank=True, unique=True, overwrite=False, db_index=True)),
             ('_short_url', self.gf('django.db.models.fields.URLField')(max_length=200)),
@@ -33,8 +33,8 @@ class Migration(SchemaMigration):
             ('event_c_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='event_followers', to=orm['contenttypes.ContentType'])),
             ('event_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('done', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('created', self.gf('timezones.fields.LocalizedDateTimeField')(auto_now_add=True, blank=True)),
+            ('modified', self.gf('timezones.fields.LocalizedDateTimeField')(auto_now=True, blank=True)),
         ))
         db.send_create_signal('events', ['EventFollower'])
 
@@ -93,25 +93,25 @@ class Migration(SchemaMigration):
         },
         'events.eventfollower': {
             'Meta': {'ordering': "['-created']", 'unique_together': "(('user', 'event_c_type', 'event_id'),)", 'object_name': 'EventFollower'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'created': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'event_c_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'event_followers'", 'to': "orm['contenttypes.ContentType']"}),
             'event_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'modified': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'events_followed'", 'to': "orm['auth.User']"})
         },
         'events.suggestion': {
             'Meta': {'object_name': 'Suggestion'},
             '_short_url': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             '_vis': ('django.db.models.fields.CharField', [], {'default': "'public'", 'max_length': '10'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'date_ends': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'}),
-            'date_starts': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'}),
+            'created': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'date_ends': ('timezones.fields.LocalizedDateTimeField', [], {'blank': 'True'}),
+            'date_starts': ('timezones.fields.LocalizedDateTimeField', [], {'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'max_length': '1024'}),
             'done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'modified': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '170'}),
             'place': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['places.Place']"}),
             'slug': ('fields.AutoSlugField', [], {'populate_from': "['name', 'place']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'}),
@@ -121,11 +121,11 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "('_order',)", 'object_name': 'City'},
             '_order': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'location': ('django.contrib.gis.db.models.fields.PointField', [], {}),
+            'location': ('django.contrib.gis.db.models.fields.PointField', [], {'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'population': ('django.db.models.fields.IntegerField', [], {}),
+            'population': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'region': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'cities'", 'to': "orm['places.Region']"}),
-            'slug': ('fields.AutoSlugField', [], {'populate_from': "['name', 'region']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'})
+            'slug': ('webapp.site.fields.AutoSlugField', [], {'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'populate_from': "['name', 'region']", 'overwrite': 'False', 'db_index': 'True'})
         },
         'places.country': {
             'Meta': {'ordering': "['name']", 'object_name': 'Country'},
@@ -139,17 +139,19 @@ class Migration(SchemaMigration):
         'places.place': {
             'Meta': {'ordering': "('_order',)", 'object_name': 'Place'},
             '_order': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            '_short_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'city': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'places'", 'to': "orm['places.City']"}),
-            'google_places_id': ('django.db.models.fields.CharField', [], {'max_length': '232', 'blank': 'True'}),
+            'created': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'google_places_id': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'unique': 'True', 'max_length': '232', 'blank': 'True'}),
             'google_places_reference': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '232', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'location': ('django.contrib.gis.db.models.fields.PointField', [], {}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'db_index': 'True'}),
-            'num': ('django.db.models.fields.IntegerField', [], {}),
-            'phone': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
-            'slug': ('fields.AutoSlugField', [], {'populate_from': "['name', 'city']", 'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'unique': 'True', 'overwrite': 'False', 'db_index': 'True'}),
-            'street': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            'url': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
+            'modified': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
+            'phone': ('django.db.models.fields.CharField', [], {'max_length': '32', 'blank': 'True'}),
+            'slug': ('webapp.site.fields.AutoSlugField', [], {'allow_duplicates': 'False', 'max_length': '50', 'separator': "u'-'", 'blank': 'True', 'populate_from': "['name', 'city']", 'overwrite': 'False', 'db_index': 'True'}),
+            'street': ('django.db.models.fields.CharField', [], {'max_length': '512', 'blank': 'True'}),
+            'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'places'", 'to': "orm['auth.User']"})
         },
         'places.region': {
@@ -159,7 +161,7 @@ class Migration(SchemaMigration):
             'country': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'regions'", 'to': "orm['places.Country']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'slug': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'max_length': '150', 'blank': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '150', 'db_index': 'True'})
         }
     }
 

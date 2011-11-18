@@ -15,7 +15,7 @@ urlpatterns = patterns('',
        places_views.place_detail,
        name='places_place_detail'),
     # Añadir place
-    url(r'^place/add/$',
+    url(r'^places/add/$',
        places_views.place_add,
        name='places_place_add'),
     # Listar places

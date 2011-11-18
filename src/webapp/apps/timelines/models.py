@@ -6,9 +6,14 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import F
 
-from signals import timeline_added, follower_added, follower_deleted
+from timezones.fields import LocalizedDateTimeField
+from signals import timeline_added, follower_added, follower_deleted, notification_added
+from profiles.models import UserProfile
 
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
 
 class NotificationSettings(models.Model):
     TIME_CHOICES = (
@@ -21,7 +26,7 @@ class NotificationSettings(models.Model):
     user = models.OneToOneField(User,
                                 unique=True,
                                 verbose_name=_(u'usuario'),
-                                related_name='notification_settings')
+                                )
     
     notification_invitation = models.PositiveSmallIntegerField(choices=TIME_CHOICES,
                                                default=1,
@@ -43,16 +48,17 @@ class NotificationSettings(models.Model):
 #------------------------------------------------------------------------------ 
 class FollowerManager(models.Manager):
     def is_follower(self, follower, followee, **kwargs):
+        if follower.__eq__(followee):
+            return True
         follower_type = ContentType.objects.get_for_model(follower)
         followee_type = ContentType.objects.get_for_model(followee)
-        
         return self.filter(follower_id=follower.id,  
                         follower_c_type=follower_type,
                         followee_id=followee.id, 
                         followee_c_type=followee_type).exists()
         
     def toggle_follower(self, follower, followee, **kwargs):
-        if follower == followee:
+        if follower.__eq__(followee):
             return None
         follower_type = ContentType.objects.get_for_model(follower)
         followee_type = ContentType.objects.get_for_model(followee)
@@ -83,23 +89,28 @@ class FollowerManager(models.Manager):
         follower_type = ContentType.objects.get_for_model(follower)
         if type_filter is not None:
             followee_type = ContentType.objects.get_for_model(type_filter)
-            return self.filter(follower_id=follower.id, 
-                                follower_c_type=follower_type,
-                                followee_c_type=followee_type).select_related(depth=1)
+            ids = self.filter(follower_id=follower.id,
+                               follower_c_type=follower_type,
+                               followee__followee_c_type=followee_type).values_list('followee_id', flat=True)
+            return User.objects.filter(id__in=ids).select_related('profile')
         else:
-            return self.filter(follower_id=follower.id, 
-                                follower_c_type=follower_type).select_related(depth=1)
+            ids = self.filter(follower_id=follower.id,
+                               follower_c_type=follower_type).values_list('followee_id', flat=True)
+            return User.objects.filter(id__in=ids).select_related('profile')
                                 
     def get_by_followee(self, followee, type_filter=None):
         followee_type = ContentType.objects.get_for_model(followee)
         if type_filter is not None:
             followee_type = ContentType.objects.get_for_model(type_filter)
-            return self.filter(followee_id=followee.id, 
-                                follower_c_type=followee_type,
-                                followee_c_type=followee_type).select_related(depth=1)
+            ids = self.filter(followee_id=followee.id,
+                               followee_c_type=followee_type,
+                               follower__followee_c_type=followee_type).values_list('follower_id', flat=True)
+            return User.objects.filter(id__in=ids).select_related('profile')
         else:
-            return self.filter(followee_id=followee.id,
-                               followee_c_type=followee_type).select_related(depth=1)
+            ids = self.filter(followee_id=followee.id,
+                               followee_c_type=followee_type).values_list('follower_id', flat=True)
+            return User.objects.filter(id__in=ids).select_related('profile')
+        
 
 class Follower(models.Model):
     follower_c_type = models.ForeignKey(ContentType,
@@ -139,6 +150,7 @@ class TimelineManager(models.Manager):
         # el usuario sigue a sus propios timelines
         TimelineFollower.objects.create(timeline=timeline, follower=user)
         timeline_added.send(sender=timeline)
+        return timeline
         
     def del_all_timelines(self, user, msg_id, instance):
         instance_type = ContentType.objects.get_for_model(instance)
@@ -162,7 +174,7 @@ class TimelineManager(models.Manager):
             
         """
         c_type = ContentType.objects.get_for_model(instance)
-        return self.filter(instance_id=object.id, content_type=c_type, visible=visible).select_related()#.iterator()
+        return self.filter(instance_id=object.id, content_type=c_type, visible=visible).select_related(depth=1)#.iterator()
     
     def get_by_user(self, user, visible=True, all=False):
         """
@@ -179,9 +191,9 @@ class TimelineManager(models.Manager):
         else:
             q = self.filter(user = user)
         if not all: # todo el timeline, visible y no visible
-            return q.filter(visible=visible).select_related()#.iterator()
+            return q.filter(visible=visible).select_related(depth=1)#.iterator()
         else:
-            return q.select_related()#.iterator()
+            return q.select_related(depth=1)#.iterator()
     
     def get_chronology(self, user):
         """
@@ -288,9 +300,9 @@ class Timeline(models.Model):
     visible = models.BooleanField(_(u"Visible en perfil publico"),
                                   default=True,
                                   )
-    created = models.DateTimeField(_(u"Creado"),
+    created = LocalizedDateTimeField(_(u"Creado"),
                                    auto_now_add=True)
-    modified = models.DateTimeField(_(u"Modificado"),
+    modified = LocalizedDateTimeField(_(u"Modificado"),
                                       auto_now=True)
     
     objects = TimelineManager()
@@ -339,17 +351,61 @@ class TimelineFollower(models.Model):
     follower_id = models.PositiveIntegerField(_(u"Identificador del seguidor"))
     follower = generic.GenericForeignKey('follower_c_type', 'follower_id',) # clave generica para cualquier modelo
     
-    created = models.DateTimeField(auto_now_add=True)
+    created = LocalizedDateTimeField(auto_now_add=True)
     objects = TimelineFollowerManager()
     
     class Meta:
         get_latest_by = "created"
         ordering = ['-created']
         unique_together = (("timeline", "follower_c_type", "follower_id"),)
-        verbose_name = _(u"Notificacion de Timeline")
-        verbose_name_plural = _(u"Notificaciones de Timelines")
+        verbose_name = _(u"Seguidor de Timeline")
+        verbose_name_plural = _(u"Seguidores de Timelines")
         
     def __unicode__(self):
         return "%s - %d - %s" % (self.follower, self.timeline_id, self.created)
     
 from tasks import share_timeline
+
+class TimelineNotificationManager(models.Manager):
+    def add_notification(self, timeline, user):
+        obj = self.create()(timeline = timeline,
+                            user = user
+                            )
+        notification_added.send(sender=obj)
+        return obj
+        UserProfile.objects.filter(
+                                   user = user
+                                   ).update(
+                                            counter_notifications = F('counter_notifications') + 1
+                                            )
+        return obj
+    
+    def get_by_user(self, user):
+        user_type = ContentType.objects.get_for_model(user)
+        return Timeline.objects.filter(
+                                       timelinenotification__user_c_type = user_type,
+                                       timelinenotification__user_id = user.id,
+                                       ).select_related(depth=1)
+        
+
+class TimelineNotification(models.Model):
+    timeline = models.ForeignKey(Timeline,
+                                 blank=False)
+    
+    user_c_type = models.ForeignKey(ContentType,
+                                        verbose_name = _(u"Tipo de objeto seguidor"),
+                                        related_name = "timelinenotifications")
+    user_id = models.PositiveIntegerField(_(u"Identificador del seguidor"))
+    user = generic.GenericForeignKey('user_c_type', 'user_id',) # clave generica para cualquier modelo
+    created = LocalizedDateTimeField(auto_now_add=True)
+    
+    objects = TimelineNotificationManager()
+    
+    class Meta:
+        get_latest_by = "created"
+        ordering = ['-created']
+        verbose_name = _(u"Notificacion de Timeline")
+        verbose_name_plural = _(u"Notificaciones de Timelines")
+        
+    def __unicode__(self):
+        return "%s - %d - %s" % (self.user, self.timeline_id, self.created)

@@ -15,14 +15,16 @@ class Migration(SchemaMigration):
             ('privacy', self.gf('django.db.models.fields.CharField')(default='registered', max_length=15)),
             ('language', self.gf('django.db.models.fields.CharField')(default='es', max_length=5)),
             ('user', self.gf('django.db.models.fields.related.OneToOneField')(related_name='profile', unique=True, to=orm['auth.User'])),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
             ('show_followers', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('show_followings', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('sync_avatar_with', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1)),
-            ('counter_suggested', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('counter_followers', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('counter_followings', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('counter_notifications', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('counter_supported', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('counter_suggested', self.gf('webapp.site.fields.PositiveCounterField')(default=0)),
+            ('counter_followers', self.gf('webapp.site.fields.PositiveCounterField')(default=0)),
+            ('counter_followings', self.gf('webapp.site.fields.PositiveCounterField')(default=0)),
+            ('counter_notifications', self.gf('webapp.site.fields.PositiveCounterField')(default=0)),
+            ('counter_supported', self.gf('webapp.site.fields.PositiveCounterField')(default=0)),
+            ('timezone', self.gf('timezones.fields.TimeZoneField')(default='Europe/Madrid', max_length=100)),
         ))
         db.send_create_signal('profiles', ['UserProfile'])
 
@@ -72,11 +74,12 @@ class Migration(SchemaMigration):
         },
         'profiles.userprofile': {
             'Meta': {'object_name': 'UserProfile'},
-            'counter_followers': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'counter_followings': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'counter_notifications': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'counter_suggested': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'counter_supported': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'counter_followers': ('webapp.site.fields.PositiveCounterField', [], {'default': '0'}),
+            'counter_followings': ('webapp.site.fields.PositiveCounterField', [], {'default': '0'}),
+            'counter_notifications': ('webapp.site.fields.PositiveCounterField', [], {'default': '0'}),
+            'counter_suggested': ('webapp.site.fields.PositiveCounterField', [], {'default': '0'}),
+            'counter_supported': ('webapp.site.fields.PositiveCounterField', [], {'default': '0'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'language': ('django.db.models.fields.CharField', [], {'default': "'es'", 'max_length': '5'}),
             'mugshot': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
@@ -84,6 +87,7 @@ class Migration(SchemaMigration):
             'show_followers': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'show_followings': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'sync_avatar_with': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
+            'timezone': ('timezones.fields.TimeZoneField', [], {'default': "'Europe/Madrid'", 'max_length': '100'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'profile'", 'unique': 'True', 'to': "orm['auth.User']"})
         }
     }

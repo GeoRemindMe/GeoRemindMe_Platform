@@ -1,0 +1,60 @@
+{% extends "generic/base_generic.html" %}
+{% load i18n %}
+{% url fb_notifications as notifications_section %}
+{% load tags %}
+
+{% block extra_js %}
+    {% if request.META.REMOTE_ADDR = "127.0.0.1" %}
+        <script type="text/javascript" src="/static/common/js/chronology.js"></script>    
+    {% else %}
+        <script type="text/javascript" src="/static/common/js/chronology.min.js"></script>    
+    {% endif %}
+{%endblock%}
+
+{% block embed_js %}{%endblock%}
+
+{% block title %}{%trans "Actividad" %}{% endblock %}
+{% block goBack %}{%endblock%}
+{% block body %}
+    <div {% block id %} {%endblock%} class="clear">
+        {% block pre_chronology %} {%endblock%}
+        {% if timelines|length %}    
+            <ul id="tabMenu" class="clear">
+                <li class="clear-box">Ver:</li>
+                <li id="no-filter" class="active">{% trans "Todo" %}<!--<span id="all-counter"></span>--></li>
+                <li id="filter-suggestions">{% trans "Sugerencias" %} <span id="suggestions-counter"></span></li>
+                <li id="filter-lists">{% trans "Listas" %} <span id="lists-counter"></span></li>
+                <li id="filter-likes">{% trans "Valoraciones" %} <span id="likes-counter"></span></li>
+                <li id="filter-comments">{% trans "Comentarios" %} <span id="comments-counter"></span></li>
+                
+            </ul>
+                {% include "generic/timeline.html" %}
+            </ul>
+        
+            <!-- Si hay más mensajes -->
+            {% if timelines|length > 9%}
+                <div class="load-more btn">{%trans "Cargar más" %}</div>
+            {% endif %}    
+            
+            
+        {% endif %}    
+    
+        
+        {% block pos_chronology %}{%endblock%}
+
+    </div>
+
+
+    
+    
+    <script id="commentTemplate" type="text/x-jquery-tmpl">
+        <li>
+			<div class="removable" value="${id}" type="comment"><a href="#">{%trans "Borrar" %}</a></div>
+            <img class="user-picture" src="{% embedded_avatar request.user.username %}" alt="user avatar"><a href="{% url2 in_facebook profiles_profile_public user.username %}" class="dark-link">{{user.username}}</a>: ${msg}<br>
+            <span class="timestamp">Hace 0 minutos</span>
+
+        </li>
+    </script>    
+{% endblock %}
+
+

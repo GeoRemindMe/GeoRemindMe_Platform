@@ -18,6 +18,7 @@ def place_edit(request, slug):
         form = PlaceForm(request.POST, instance=place)
         if form.is_valid():
             form.save()
+            return HttpResponse(place.get_absolute_url())
     else:
         form = PlaceForm(instance=place)
     return render_to_response('places/place_edit.html',
@@ -37,7 +38,18 @@ def place_detail(request, slug):
 
 @login_required
 def place_add(request):
-    pass
+    if request.method == 'POST':
+        form = PlaceForm(request.POST)
+        if form.is_valid():
+            new_place = form.save()
+            return HttpResponse(new_place.get_absolute_url())
+    else:
+        form = PlaceForm()
+    return render_to_response('places/place_edit.html',
+                              {'form': form,
+                               'new': True 
+                              },
+                              context_instance = RequestContext(request))
 
 
 @page_template("places/places_list_index_page.html")

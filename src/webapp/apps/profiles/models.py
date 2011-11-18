@@ -14,12 +14,14 @@ from userena.utils import get_gravatar
 from socialregistration.contrib.facebook.models import FacebookProfile
 from socialregistration.contrib.twitter.models import TwitterProfile
 
-#from south.modelsinspector import add_introspection_rules
-#add_introspection_rules([], ["^modules.timezones.fields.TimeZoneField"])
+from webapp.site.fields import PositiveCounterField
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^timezones.fields.TimeZoneField",])
 
 class UserProfile(UserenaLanguageBaseProfile):
     AVATAR_CHOICES = (
-                (0, _(u'Avatar subido')),
+                #(0, _(u'Avatar subido')),
                 (1, _(u'Gravatar')),
                 (2, _(u'Facebook')),
                 (3, _(u'Twitter')),
@@ -28,6 +30,8 @@ class UserProfile(UserenaLanguageBaseProfile):
                                 unique=True,
                                 verbose_name=_(u"usuario"),
                                 related_name='profile')
+    
+    description = models.CharField(_(u"Descripción"), max_length=100, blank=True)
     
     show_followers = models.BooleanField(_(u"Mostrar quien te sigue"),
                                          default=True, 
@@ -39,21 +43,23 @@ class UserProfile(UserenaLanguageBaseProfile):
                                            default=1,
                                            verbose_name=_(u"Sincronizar tu avatar con")
                                           )
-    counter_suggested = models.PositiveIntegerField(_(u"Contador de sugerencias creadas"),
+    counter_suggested =PositiveCounterField(_(u"Contador de sugerencias creadas"),
                                                     default=0,
                                                     )
-    counter_followers = models.PositiveIntegerField(_(u"Contador de seguidores"),
+    counter_followers = PositiveCounterField(_(u"Contador de seguidores"),
                                                     default=0,
                                                     )
-    counter_followings = models.PositiveIntegerField(_(u"Contador de seguidos"),
+    counter_followings = PositiveCounterField(_(u"Contador de seguidos"),
                                                      default=0,
                                                      )
-    counter_notifications = models.PositiveIntegerField(_(u"Contador de notificaciones pendientes"),
+    counter_notifications = PositiveCounterField(_(u"Contador de notificaciones pendientes"),
                                                         default=0,
                                                         )
-    counter_supported = models.PositiveIntegerField(_(u"Contador de notificaciones pendientes"),
+    counter_supported = PositiveCounterField(_(u"Contador de votadas"),
                                                     default=0,
                                                     )
+    
+    timezone = TimeZoneField(_(u"Zona horaria"))
     
     class Meta:
         verbose_name = _(u"Perfil de usuario")

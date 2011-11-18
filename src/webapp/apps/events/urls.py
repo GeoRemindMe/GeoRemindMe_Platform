@@ -6,6 +6,10 @@ import views as suggestions_views
 
 
 urlpatterns = patterns('',
+    # mochila
+    url(r'^!/(?P<username>[\.\w]+)/suggestions/$',
+       suggestions_views.suggestions_user,
+       name='suggestions_suggestions_user'),
     # Editar sugerencia
     url(r'^suggestion/(?P<slug>[\.\w]+)/edit/$',
        suggestions_views.suggestion_edit,

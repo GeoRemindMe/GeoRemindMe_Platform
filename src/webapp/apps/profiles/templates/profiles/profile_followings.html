@@ -1,0 +1,44 @@
+{% extends "generic/base_generic.html" %}
+{% load i18n %}
+{% load tags %}
+
+{% block title %}
+    {% blocktrans %} 
+        GeoRemindMe! / Personas que sigue {{username}}
+    {% endblocktrans %}
+{% endblock %}
+
+{% block body %}
+	{% with followings as followings_q %}
+    <h1>
+        {% ifequal request.user.username username %}
+            {%trans "Sigues {{followings_q|length}} personas" %}
+        {% else %}
+            {%trans "{{username}} sigue {{followings_q|length}} personas" %}
+        {% endifequal %}
+    </h1>
+    
+    <ul id="user-list">
+    {% for f in followings_q %}
+        <li>
+            <div class="avatar">
+                <a href="{% url2 in_facebook profiles_profile_public f.username %}" title="{%trans "Ver perfil en GeoRemindMe" %}">
+                    <img src="{% embedded_avatar f.username%}" alt="{%trans "Avatar" %}">
+                </a>
+                <br>
+                <a href="{% url2 in_facebook profiles_profile_public f.username %}" title="{%trans "Ver perfil en GeoRemindMe" %}">{{ f.username }}</a>
+            </div>
+
+            {% ifequal user.username username_page %}
+                <div id="following_state_{{ f.id }}" class="follow-button following-state">
+                    <span  onclick="javascript:follow('unfollow',{{f.id}})"><a href="#" class="following">{%trans "Siguiendo" %}</a></span>
+                </div>
+            {% endifequal %}
+            
+            
+            <hr>
+        </li>
+    {% endfor %}    
+    </ul>
+    {% endwith %}
+{% endblock %}

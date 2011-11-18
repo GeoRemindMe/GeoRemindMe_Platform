@@ -25,9 +25,10 @@ class UserProfileForm(forms.ModelForm):
                                                              "numeros, puntos o guiones bajos")})
     class Meta:
         model = UserProfile
-        fields = ('mugshot', 'show_followers', 'show_followings', 
-                  'language', 'privacy', 'sync_avatar_with', 'privacy')
-        exclude = ('user', 'slug')
+        fields = ( 'show_followers', 'show_followings', 
+                  'language', 'privacy', 'sync_avatar_with', 'privacy',
+                  'description')
+        exclude = ('user', 'slug', 'mugshot',)
         
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)

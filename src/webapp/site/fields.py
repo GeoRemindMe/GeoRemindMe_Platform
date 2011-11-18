@@ -1,31 +1,32 @@
 # coding=utf-8
 
 from django.template.defaultfilters import slugify
-from django.db.models import SlugField
+from django.db.models import SlugField, IntegerField
+from django.utils.translation import ugettext_lazy as _
 import re
 
 # https://github.com/django-extensions/django-extensions/blob/master/django_extensions/db/fields/__init__.py
 class AutoSlugField(SlugField):
     """ AutoSlugField
 
-By default, sets editable=False, blank=True.
-
-Required arguments:
-
-populate_from
-Specifies which field or list of fields the slug is populated from.
-
-Optional arguments:
-
-separator
-Defines the used separator (default: '-')
-
-overwrite
-If set to True, overwrites the slug on every save (default: False)
-
-Inspired by SmileyChris' Unique Slugify snippet:
-http://www.djangosnippets.org/snippets/690/
-"""
+    By default, sets editable=False, blank=True.
+    
+    Required arguments:
+    
+    populate_from
+    Specifies which field or list of fields the slug is populated from.
+    
+    Optional arguments:
+    
+    separator
+    Defines the used separator (default: '-')
+    
+    overwrite
+    If set to True, overwrites the slug on every save (default: False)
+    
+    Inspired by SmileyChris' Unique Slugify snippet:
+    http://www.djangosnippets.org/snippets/690/
+    """
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
@@ -42,12 +43,12 @@ http://www.djangosnippets.org/snippets/690/
 
     def _slug_strip(self, value):
         """
-Cleans up a slug by removing slug separator characters that occur at
-the beginning or end of a slug.
-
-If an alternate separator is used, it will also replace any instances
-of the default '-' separator with the new separator.
-"""
+        Cleans up a slug by removing slug separator characters that occur at
+        the beginning or end of a slug.
+        
+        If an alternate separator is used, it will also replace any instances
+        of the default '-' separator with the new separator.
+        """
         re_sep = '(?:-|%s)' % re.escape(self.separator)
         value = re.sub('%s+' % re_sep, self.separator, value)
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
@@ -140,3 +141,24 @@ of the default '-' separator with the new separator.
         })
         # That's our definition!
         return (field_class, args, kwargs)
+
+
+class PositiveCounterField(IntegerField):
+    description = _("Integer")
+
+    def get_internal_type(self):
+        return "IntegerField"
+
+    def formfield(self, **kwargs):
+        defaults = {'min_value': 0}
+        defaults.update(kwargs)
+        return super(self.__class__, self).formfield(**defaults)
+
+    def pre_save(self, model_instance, add):
+        if model_instance < 0:
+            return 0
+        else:
+            return super(self.__class__, self).pre_save(model_instance, add)
+        
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^webapp.site.fields.PositiveCounterField"])

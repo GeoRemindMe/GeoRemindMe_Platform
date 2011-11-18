@@ -1,53 +1,68 @@
-{% extends 'userena/base_userena.html' %}
+{% extends "generic/chronology.html" %}
 {% load i18n %}
+{% load tags %}
 
-{% block title %}{% blocktrans with profile.user.username as username %}{{ username }}'s profile.{% endblocktrans %}{% endblock %}
-{% block content_title %}<h2>{{ profile.user.username }} {% if profile.user.get_full_name %}({{ profile.user.get_full_name }}){% endif %}</h2>{% endblock %}
+{% block title %}
+    {% blocktrans with user.username as username %} 
+        {{username}} en GeoRemindMe!
+    {% endblocktrans %}
+{% endblock %}
 
-{% block content %}
-<div class="white-box">
 
-  {% comment %}Dirty hack. Will use django-guardian in the future.{% endcomment %}
-  {% if user.username == profile.user.username %}
-  <ul id="box-nav">
+{% block embed_js %}   
+    <script type="text/javascript">
+    
+    $("#user-avatar").ready(function(){
+        $(this).load();
+    });
+    $(document).ready(function(){
+        
+        //Adding behaviour to tab content
+        $('#tabMenu li').click(function(){
+            tab_id=$('#tabMenu li.active').attr('id')
+            $('#'+tab_id+'_content').addClass('hidden');
+            $('#tabMenu li.active').removeClass('active');
+            
+            tab_id=$(this).attr('id')
+            $('#'+tab_id+'_content').removeClass('hidden');
+            $(this).addClass('active');
+        })
+    });
+    </script>
+{%endblock%}
+
+{% block pre_chronology %} 
+    <div id="public-profile">
+<!--
+        <div id="col-right-left">
+-->
+            <div id="avatar-follow">
+                <a href="{% url2 in_facebook profiles_profile_public user.username %}"><img id="user-avatar" src="{% embedded_avatar user.username %}" alt="{{user.username}} {%trans "avatar" %}"/></a>
+                <br>
+                {% ifnotequal request.user.username user.username %}
+                    {% if is_follower %}
+                        <div id="following_state_{{ user.username }}" class="follow-button following-state">
+                            <span  onclick="javascript:follow('unfollow',{{user.username}})"><a href="#" class="following">{%trans "Siguiendo" %}</a></span>
+                        </div>
+                    {% else %}
+                        <div id="following_state_{{ user.username }}" class="follow-button">
+                            <span  onclick="javascript:follow('follow',{{user.username}})"><a href="#" class="no-following">{%trans "Seguir" %}</a></span>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    
+                    <span class="btn"><a href="{% url2 in_facebook profiles_profile_edit request.user.username %}" id="edit-profile-btn">{%trans "Editar" %}</a> </span>
+                    
+                {% endifnotequal %}
+            </div>
+            
+            <div id="user-info">
+                <h1>{{username}}</h1>
+                
+            
+        
+            
   
-    <li><a href="{% url profiles_profile_public user.username %}">{% trans "View profile" %} &raquo;</a></li>
-    <li><a href="{% url profiles_profile_edit user.username %}">{% trans "Edit details" %} &raquo;</a></li>
-    <li><a href="{% url profiles_password_change user.username %}">{% trans "Change password" %} &raquo;</a></li>
-    <li><a href="{% url profiles_email_change user.username %}">{% trans "Change email" %} &raquo;</a></li>
-  </ul>
-  {% endif %}
-	{{timeline}}
-  <div id="details">
-    <img src="{{ profile.get_mugshot_url }}" alt="{% trans "Your mugshot" %}" />
-    {% if profile.user.get_full_name %}
-    <p><strong>{% trans "Name" %}</strong><br /> {{ profile.user.get_full_name }}</p>
-    {% endif %}
-    {% if profile.user.email %}
-    <p><strong>{% trans "Email" %}</strong><br />{{ profile.user.email }}</p>
-    {% endif %}
-    {% if profile.age %}
-    <p><strong>{% trans "Age" %}</strong><br /> {{ profile.age }}</p>
-    {% endif %}
-    {% if profile.website %}
-    <p><strong>{% trans "Website" %}</strong><br /> <a href="{{ profile.website }}">{{ profile.website }}</a></p>
-    {% endif %}
-    {% if profile.location %}
-    <p><strong>{% trans "Location" %}</strong><br />{{ profile.location }}</p>
-    {% endif %}
-    {% if profile.about_me %}
-    <p><strong>{% trans "About me" %}</strong><br />{{ profile.about_me }}</p>
-    {% endif %}
-  </div>
-</div>
-{% load endless %}
-{% load timelines_tags %}
-
-{% paginate timelines %}
-
-<h2>Timeline:</h2>
-{% for timeline in timelines %}
-    {% timeline_item timeline %}
-{% endfor %}
-{% show_pages %}
+    </div>
+   
 {% endblock %}

@@ -1,7 +1,16 @@
 # coding=utf-8
 
 from django import template
+from django.contrib.auth.models import User
 register = template.Library()
+
+
+@register.simple_tag
+def active(request, pattern):
+    import re
+    if re.search(pattern+'$', request.path):
+        return 'active-section'
+    return ''
 
 
 @register.tag
@@ -128,4 +137,9 @@ formatted according to settings.DATE_FORMAT
 
 @register.simple_tag
 def embedded_avatar(username):
-    return None
+    try:
+        user = User.objects.get(username__iexact=username)
+        profile = user.get_profile()
+        return profile.get_mugshot_url()
+    except:
+        return None

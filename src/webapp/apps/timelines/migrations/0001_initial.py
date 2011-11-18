@@ -11,7 +11,7 @@ class Migration(SchemaMigration):
         # Adding model 'NotificationSettings'
         db.create_table('timelines_notificationsettings', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(related_name='notification_settings', unique=True, to=orm['auth.User'])),
+            ('user', self.gf('django.db.models.fields.related.OneToOneField')(related_name='notificationsettings', unique=True, to=orm['auth.User'])),
             ('notification_invitation', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1)),
             ('notification_suggestion', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1)),
             ('notification_account', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1)),
@@ -40,8 +40,8 @@ class Migration(SchemaMigration):
             ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
             ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('visible', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('created', self.gf('timezones.fields.LocalizedDateTimeField')(auto_now_add=True, blank=True)),
+            ('modified', self.gf('timezones.fields.LocalizedDateTimeField')(auto_now=True, blank=True)),
         ))
         db.send_create_signal('timelines', ['Timeline'])
 
@@ -51,12 +51,22 @@ class Migration(SchemaMigration):
             ('timeline', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['timelines.Timeline'])),
             ('follower_c_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='timelinefollowings', to=orm['contenttypes.ContentType'])),
             ('follower_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('created', self.gf('timezones.fields.LocalizedDateTimeField')(auto_now_add=True, blank=True)),
         ))
         db.send_create_signal('timelines', ['TimelineFollower'])
 
         # Adding unique constraint on 'TimelineFollower', fields ['timeline', 'follower_c_type', 'follower_id']
         db.create_unique('timelines_timelinefollower', ['timeline_id', 'follower_c_type_id', 'follower_id'])
+
+        # Adding model 'TimelineNotification'
+        db.create_table('timelines_timelinenotification', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('timeline', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['timelines.Timeline'])),
+            ('user_c_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='timelinenotifications', to=orm['contenttypes.ContentType'])),
+            ('user_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('created', self.gf('timezones.fields.LocalizedDateTimeField')(auto_now_add=True, blank=True)),
+        ))
+        db.send_create_signal('timelines', ['TimelineNotification'])
 
 
     def backwards(self, orm):
@@ -78,6 +88,9 @@ class Migration(SchemaMigration):
 
         # Deleting model 'TimelineFollower'
         db.delete_table('timelines_timelinefollower')
+
+        # Deleting model 'TimelineNotification'
+        db.delete_table('timelines_timelinenotification')
 
 
     models = {
@@ -132,14 +145,14 @@ class Migration(SchemaMigration):
             'notification_account': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             'notification_invitation': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             'notification_suggestion': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'notification_settings'", 'unique': 'True', 'to': "orm['auth.User']"})
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'notificationsettings'", 'unique': 'True', 'to': "orm['auth.User']"})
         },
         'timelines.timeline': {
             'Meta': {'ordering': "['-created']", 'object_name': 'Timeline'},
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'created': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'modified': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'msg_id': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
@@ -147,11 +160,19 @@ class Migration(SchemaMigration):
         },
         'timelines.timelinefollower': {
             'Meta': {'ordering': "['-created']", 'unique_together': "(('timeline', 'follower_c_type', 'follower_id'),)", 'object_name': 'TimelineFollower'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'created': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'follower_c_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'timelinefollowings'", 'to': "orm['contenttypes.ContentType']"}),
             'follower_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'timeline': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['timelines.Timeline']"})
+        },
+        'timelines.timelinenotification': {
+            'Meta': {'ordering': "['-created']", 'object_name': 'TimelineNotification'},
+            'created': ('timezones.fields.LocalizedDateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'timeline': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['timelines.Timeline']"}),
+            'user_c_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'timelinenotifications'", 'to': "orm['contenttypes.ContentType']"}),
+            'user_id': ('django.db.models.fields.PositiveIntegerField', [], {})
         }
     }
 

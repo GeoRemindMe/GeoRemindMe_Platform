@@ -13,14 +13,26 @@ urlpatterns = patterns('',
     url(r'^dashboard/$',
        profiles_views.dashboard,
        name='profiles_dashboard'),
+    # Ver notificaciones
+    url(r'^dashboard/notifications/$',
+       profiles_views.notifications,
+       name='profiles_notifications'),
     # Editar perfil
     url(r'^!/(?P<username>[\.\w]+)/edit/$',
        profiles_views.profile_edit,
        name='profiles_profile_edit'),
-    # Editar perfil
+    # Avatar
     url(r'^!/(?P<username>[\.\w]+)/picture/$',
        profiles_views.user_avatar,
        name='profiles_avatar'),
+    # Followers
+    url(r'^!/(?P<username>[\.\w]+)/followers/$',
+       profiles_views.followers_panel,
+       name='profiles_profile_followers'),
+    #Followings
+    url(r'^!/(?P<username>[\.\w]+)/followings/$',
+       profiles_views.followings_panel,
+       name='profiles_profile_followings'),
     # Ver perfil
     url(r'^!/(?P<username>[\.\w]+)/$',
        profiles_views.profile_detail,

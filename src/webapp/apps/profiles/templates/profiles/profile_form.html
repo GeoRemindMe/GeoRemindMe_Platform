@@ -1,24 +1,54 @@
-{% extends 'userena/base_userena.html' %}
+{% extends "generic/base_generic.html" %}
+{% load tags %}
 {% load i18n %}
 
-{% block title %}{% trans "Account setup" %}{% endblock %}
+{% block title %}{%trans "Datos personales" %}{% endblock %}
 
-{% block content_title %}<h2>{% blocktrans with profile.user.username as username %}Account &raquo; {{ username }}{% endblocktrans %}</h2>{% endblock %}
 
-{% block content %}
+{% block extra_js %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+        
+            $('#editPass').one('click',function(){
+                $('#editPass').empty();
+                $("#passForm").tmpl( {} ).appendTo("#editPass");
+                $("[type='password']").placeholder();
+            })
+        });
+    </script>
+{%endblock%}
+{% block body %}
+    <div id="edit-profile">
+        <h1>{% trans "Editar perfil" %}</h1>
+        <div class="section">
+            <form method="post" action="." id="editForm">
+            {{ form.as_p}}
+                <div id="avatar">
+                    <span>
+                        <img src="{% embedded_avatar request.user.username %}" alt="{{request.user.username}} avatar">
+                    </span> 
+                </div>          
+            
+				{% csrf_token %}
+				<div id="save-button">
+                    <input type="submit" value="{% trans 'Guardar' %}" title="{% trans 'Guardar los cambios' %}">
+                </div>
+			</form>
+        </div>
+        <a href="{% url2 in_facebook profiles_email_change request.user.username %}">{% trans "Modificar correo" %}</a>
+        <a href="{% url2 in_facebook profiles_password_change request.user.username %}">{% trans "Modificar contraseña" %}</a>
+    </div>
 
-<form action="" enctype="multipart/form-data" method="post">
-  <ul id="box-nav">
-    <li class="first"><a href="{% url profiles_dashboard %}"><span>{% trans 'Ver dashboard' %}</span></a></li>
-    <li class="selected"><a href="{% url profiles_profile_edit user.username %}">{% trans "Edit profile" %}</a></li>
-    <li><a href="{% url profiles_password_change user.username %}">{% trans "Change password" %}</a></li>
-    <li class="last"><a href="{% url profiles_email_change user.username %}">{% trans "Change email" %}</a></li>
-  </ul>
-  {% csrf_token %}
-  <fieldset>
-    <legend>{% trans "Edit Profile" %}</legend>
-    {{ form.as_p }}
-  </fieldset>
-  <input type="submit" value="{% trans "Save changes" %}" />
-</form>
+<script id="passForm" type="text/x-jquery-tmpl">
+<div id="passForm2">
+    <input type="password" name="user_set_profile-old_password" id="old_pass" placeholder="{%trans "Antigua contraseña" %}"/>
+    {{form.errors.old_password}}
+    <input type="password" name="user_set_profile-password" id="pass1" placeholder="{%trans "Nueva contraseña" %}"/>
+    {{form.errors.password1}}
+    <input type="password" name="user_set_profile-password2" id="pass2" placeholder="{%trans "Repite la contraseña" %}"/>
+    {{form.errors.password2}}
+</div>
+
+</script>
+    
 {% endblock %}

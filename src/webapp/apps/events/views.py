@@ -5,6 +5,10 @@ from django.contrib.auth.decorators import login_required
 
 
 @login_required
+def suggestions_user(request, username):
+    pass
+
+@login_required
 def suggestion_edit(request, slug):
     pass
 
