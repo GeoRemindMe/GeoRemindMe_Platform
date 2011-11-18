@@ -17,6 +17,7 @@ urlpatterns = patterns('',
    url(r'', include('timelines.urls')), # notificaciones timeline
    url(r'', include('places.urls')), # places
    url(r'', include('events.urls')), # events
+   url(r'', include('timelines.ajax_urls')), # timelines AJAX
    url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict, 'jsi18n'), # i18n para javascript
    #url(r'^accounts/', include('userena.urls')), # userena
    url(r'^messages/', include('userena.contrib.umessages.urls')), # framework de mensajes de userena

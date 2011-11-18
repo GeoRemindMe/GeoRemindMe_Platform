@@ -138,8 +138,7 @@ formatted according to settings.DATE_FORMAT
 @register.simple_tag
 def embedded_avatar(username):
     try:
-        user = User.objects.get(username__iexact=username)
-        profile = user.get_profile()
-        return profile.get_mugshot_url()
+        user = User.objects.select_related('profile').get(username__iexact=username)
+        return user.profile.get_mugshot_url()
     except:
         return None

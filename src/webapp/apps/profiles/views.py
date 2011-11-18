@@ -1,6 +1,6 @@
 #coding=utf-8
 
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, Http404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -66,14 +66,17 @@ def profile_edit(request, username):
 
 @page_template("profiles/profile_detail_index_page.html")
 def profile_detail(request, username, extra_context=None):
-    user = get_object_or_404(User,
-                             username__iexact=username)
-    profile = user.get_profile()
-    if not profile.can_view_profile(request.user):
+    try:
+        user = User.objects.select_related('profile').get(
+                                                      username__iexact=username
+                                                      )
+    except User.DoesNotExist:
+        raise Http404
+    if not user.profile.can_view_profile(request.user):
         return HttpResponseForbidden(_("No tienes permiso para ver este perfil"))
     
     context = {
-               'profile': profile,
+               'profile': user.profile,
                'timelines' : Timeline.objects.get_by_user(user = username,
                                             visible = True),
                'user': user,
@@ -98,18 +101,24 @@ def register(request):
     
     
 def user_avatar(request, username):
-    user = get_object_or_404(User,
-                             username__iexact=username)
-    profile = user.get_profile()
-    return profile.get_mugshot_url()
+    try:
+        user = User.objects.select_related('profile').get(
+                                                      username__iexact=username
+                                                      )
+    except User.DoesNotExist:
+        raise Http404
+    return user.profile.get_mugshot_url()
 
 
 @page_template("profiles/profile_followers_index_page.html")
 def followers_panel(request, username, extra_context=None):
-    user = get_object_or_404(User,
-                             username__iexact=username)
-    profile = user.get_profile()
-    if not profile.can_view_profile(request.user) or not profile.show_followers:
+    try:
+        user = User.objects.select_related('profile').get(
+                                                      username__iexact=username
+                                                      )
+    except User.DoesNotExist:
+        raise Http404
+    if not user.profile.can_view_profile(request.user) or not user.profile.show_followers:
         return HttpResponseForbidden(_("No tienes permiso para ver este perfil"))
     
     followers = Follower.objects.get_by_followee(user)
@@ -126,10 +135,13 @@ def followers_panel(request, username, extra_context=None):
     
 @page_template("profiles/profile_followers_index_page.html")
 def followings_panel(request, username, extra_context=None):
-    user = get_object_or_404(User,
-                             username__iexact=username)
-    profile = user.get_profile()
-    if not profile.can_view_profile(request.user) or not profile.show_followings:
+    try:
+        user = User.objects.select_related('profile').get(
+                                                      username__iexact=username
+                                                      )
+    except User.DoesNotExist:
+        raise Http404
+    if not user.profile.can_view_profile(request.user) or not user.profile.show_followings:
         return HttpResponseForbidden(_("No tienes permiso para ver este perfil"))
     
     followings = Follower.objects.get_by_follower(user)
