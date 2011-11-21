@@ -16,7 +16,7 @@ add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
 class Country(models.Model):
 	name = models.CharField(_(u"Nombre"), max_length = 200)
 	code = models.CharField(_(u"Codigo"), max_length = 2, db_index=True)
-	population = models.IntegerField(_(u"Habitantes"))
+	population = models.IntegerField(_(u"Habitantes"), blank=True)
 	continent = models.CharField(_(u"Continente"), max_length = 2)
 	tld = models.CharField(max_length = 5, unique=True)
 
@@ -38,7 +38,7 @@ class Country(models.Model):
 #------------------------------------------------------------------------------ 
 class Region(models.Model):
 	name = models.CharField(_(u"Nombre"), max_length = 200)
-	slug = models.SlugField(max_length = 150)
+	slug = AutoSlugField(populate_from=['name', 'country'], max_length = 50)
 	code = models.CharField(_(u"Codigo"), max_length = 10, db_index=True)
 	country = models.ForeignKey(Country, verbose_name=_(u"País"),
 							related_name='regions')
@@ -76,9 +76,9 @@ class City(models.Model):
 	name = models.CharField(_(u"Nombre"), max_length = 200)
 	slug = AutoSlugField(populate_from=['name', 'region'], max_length = 50)
 	region = models.ForeignKey(Region, verbose_name=_(u"Región"),
-							related_name="cities")
+							related_name="cities", blank=True)
 	location = models.PointField(_(u"Localización"), blank=True, null=True)
-	population = models.IntegerField(_(u"Habitantes"), blank=True, null=True)
+	population = models.IntegerField(_(u"Habitantes"), blank=True)
 
 	objects = CityManager()
 
@@ -110,42 +110,66 @@ class PlaceManager(models.GeoManager):
 			place = Place.objects.filter(google_places_id = kwargs['google_places_id'])
 			if place is not None:
 				return place
-		from webapp.site.libs.mapsService.places import GPRequest, GPAPIError
+		from webapp.site.libs.mapsServices.places import GPRequest, GPAPIError
 		client = GPRequest()
 		search = client.retrieve_reference(kwargs['google_places_reference'])
-		place = Place.objects.filter(google_places_id = search['result']['id'])
+		
 		location= Point(search['result']['geometry']['location']['lng'],
 						search['result']['geometry']['location']['lat'])
 		try:
 			city = client._get_city(search['result'].get('address_components'))
-			city_obj = City.objects.filter(name__iexact = city)
+			city_obj = City.objects.get(name__iexact = city)
 		except City.DoesNotExist:
 			try:
 				region = client._get_region(search['result'].get('address_components'))
-				region_obj = Region.objects.filter(name__iexact = region)
-				city_obj = City.objects.create(name=city, 
-											region=region_obj)
+				if region is not None:
+					region_obj = Region.objects.get(name__iexact = region['name'])
+					city_obj = City.objects.create(name=city, 
+												region=region_obj,
+												population = 1)
+				else:
+					city_obj = City.objects.create(name=city,
+												population = 1)
 			except Region.DoesNotExist:
 				try: 
 					country = client._get_country(search['result'].get('address_components'))
-					country_obj = Country.objects.filter(name__iexact = country)
+					country_obj = Country.objects.get(code__iexact = country['code'])
 					region_obj = Region.objects.create(name = region, 
 													country = country_obj)
-					city_obj = City.objects.create(name=city, region=region_obj)
+					city_obj = City.objects.create(name=city, 
+												region=region_obj,
+												population = 1)
 				except Country.DoesNotExist:
-					country_obj = Country.objects.create(name=country)
-					region_obj = Region.objects.create(name = region, 
+					country_obj = Country.objects.create(name=country['name'],
+														code=country['code'],
+														population=1)
+					region_obj = Region.objects.create(name = region['name'],
+													code=region['code'], 
 													country = country_obj)
-					city_obj = City.objects.create(name=city, region=region_obj)
-		Place.objects.create(name=search['result']['name'],
+					city_obj = City.objects.create(name=city, 
+												region=region_obj,
+												population = 1)
+		try:
+			place = Place.objects.get(
+									google_places_id = search['result']['id']
+									)
+			place.name=search['result']['name']
+			place.location=location
+			place.street=search['result'].get('formatted_address')
+			place.city= city_obj
+			place.google_places_reference=search['result']['reference']
+			place.google_places_id=search['result']['id']
+			place.save()
+		except Place.DoesNotExist:
+			place = Place.objects.create(name=search['result']['name'],
 							location=location,
-                            street=search['result'].get('formatted_address'),
-                            city= city_obj,
-                            google_places_reference=search['result']['reference'],
-                            google_places_id=search['result']['id'],
-                            user = kwargs['user']
-                            )
-
+	                    	street=search['result'].get('formatted_address'),
+	                     	city= city_obj,
+	                      	google_places_reference=search['result']['reference'],
+	                       	google_places_id=search['result']['id'],
+	                    	user = kwargs['user']
+	                     	)
+		return place
 		
 class Place(models.Model):
 	name = models.CharField(_(u"Nombre"), max_length = 200, blank=False)
@@ -160,7 +184,8 @@ class Place(models.Model):
 	google_places_reference = models.CharField(_(u"Referencia de Google Places"),
 											 max_length=232, 
 											 blank=True,
-											 db_index=True)
+											 db_index=True,
+											 unique=True)
 	google_places_id = models.CharField(_(u"ID de Google Places"), 
 											max_length=232, 
 											blank=True,
@@ -171,7 +196,7 @@ class Place(models.Model):
 	created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
 	modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
 	
-	objects = models.GeoManager()
+	objects = PlaceManager()
 	
 	class Meta:
 		ordering = ['name']
@@ -180,7 +205,7 @@ class Place(models.Model):
 		verbose_name_plural = _(u'Sitios')
 		
 	def __unicode__(self):
-		return unicode(self.name)
+		return u"%s, %s" % (self.name, self.city)
 	
 	@models.permalink
 	def get_absolute_url(self):

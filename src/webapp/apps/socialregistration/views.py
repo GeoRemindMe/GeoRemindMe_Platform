@@ -171,6 +171,9 @@ class OAuthRedirect(SocialRegistration, View):
             return HttpResponseRedirect(client.get_redirect_url())
         except OAuthError, error:
             return self.render_to_response({'error': error})
+        
+    def get(self, request):
+        return self.post(request)
 
 
 class OAuthCallback(SocialRegistration, View):

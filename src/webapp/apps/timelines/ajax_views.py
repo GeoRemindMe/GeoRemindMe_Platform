@@ -3,7 +3,6 @@
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.template import RequestContext
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson
 

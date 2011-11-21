@@ -1,0 +1,6 @@
+BEGIN;
+DROP TABLE "cities_district";
+DROP TABLE "cities_city";
+DROP TABLE "cities_region";
+DROP TABLE "cities_country";
+COMMIT;

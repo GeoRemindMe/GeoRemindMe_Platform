@@ -64,6 +64,7 @@ def profile_edit(request, username):
                                 template_name='profiles/profile_form.html',
                                 edit_profile_form=form)
 
+
 @page_template("profiles/profile_detail_index_page.html")
 def profile_detail(request, username, extra_context=None):
     try:
@@ -88,12 +89,8 @@ def profile_detail(request, username, extra_context=None):
     return render_to_response('profiles/profile_detail.html',
                               context,
                               context_instance = RequestContext(request))
+
     
-def login(request):
-    return userena_signin(request,
-                          template_name='profiles/login.html')
-
-
 def register(request):
     return userena_signup(request,
                           template_name = 'profiles/register.html',
@@ -132,7 +129,8 @@ def followers_panel(request, username, extra_context=None):
                               context,
                               context_instance=RequestContext(request)
                               )
-    
+
+
 @page_template("profiles/profile_followers_index_page.html")
 def followings_panel(request, username, extra_context=None):
     try:

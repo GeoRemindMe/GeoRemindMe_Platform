@@ -15,6 +15,7 @@ from profiles.models import UserProfile
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
 
+
 class NotificationSettings(models.Model):
     TIME_CHOICES = (
            (0, _(u'Nunca')),
@@ -44,6 +45,7 @@ class NotificationSettings(models.Model):
     class Meta:
         verbose_name = _('Configuracion de notificaciones')
         verbose_name_plural = _('Configuraciones de notificaciones')
+
 
 #------------------------------------------------------------------------------ 
 class FollowerManager(models.Manager):
@@ -313,9 +315,6 @@ class Timeline(models.Model):
         verbose_name = _(u"Timeline")
         verbose_name_plural = _(u"Timelines")
         
-    def save(self, *args, **kwargs):
-        super(self.__class__, self).save(*args, **kwargs)
-        
     def __unicode__(self):
         return "%s - %d - %s" % (self.user, self.id, self.modified)
     
@@ -365,6 +364,7 @@ class TimelineFollower(models.Model):
         return "%s - %d - %s" % (self.follower, self.timeline_id, self.created)
     
 from tasks import share_timeline
+
 
 class TimelineNotificationManager(models.Manager):
     def add_notification(self, timeline, user):

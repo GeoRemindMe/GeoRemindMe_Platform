@@ -2,9 +2,9 @@
 {% load i18n %}
 
 {% if not in_facebook %}
-    {% url dashboard as dashboard %}
-    {% url notifications as notifications_section %}
-    {% url user_suggestions as user_suggestions %}
+    {% url profiles_dashboard as dashboard %}
+    {% url profiles_notifications as notifications_section %}
+    {% url events_user_suggestions as user_suggestions %}
 {% else %}
     {% url fb_dashboard as dashboard %}
     {% url fb_notifications as notifications_section %}

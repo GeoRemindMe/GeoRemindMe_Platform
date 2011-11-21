@@ -44,12 +44,7 @@ urlpatterns = patterns('',
        userena_views.profile_list,
        name='profiles_profile_list'),
     # Login, logout, registro
-    url(r'^register/$',
-       userena_views.signup,
-       name='profiles_register'),
-    url(r'^login/$',
-       profiles_views.login,
-       name='profiles_login'),
+
     url(r'^logout/$',
        auth_views.logout,
        {'next_page': userena_settings.USERENA_REDIRECT_ON_SIGNOUT,

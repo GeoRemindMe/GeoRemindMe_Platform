@@ -22,6 +22,18 @@ class OpenIDRedirect(SocialRegistration, View):
         request.session[self.get_client().get_session_key()] = client
         
         return HttpResponseRedirect(client.get_redirect_url())
+    
+    def get(self, request, provider):
+        if provider.lower() == 'google':
+            provider = 'https://www.google.com/accounts/o8/id'
+        request.session['next'] = self.get_next(request)
+        client = self.get_client()(dict(request.session.items()),
+            provider)
+        
+        request.session[self.get_client().get_session_key()] = client
+        
+        return HttpResponseRedirect(client.get_redirect_url())
+
 
 class OpenIDCallback(SocialRegistration, View):
     template_name = 'socialregistration/openid/openid.html'

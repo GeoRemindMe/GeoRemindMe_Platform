@@ -11,7 +11,10 @@ VISIBILITY_CHOICES = (
                       )
 class Visibility(models.Model):
     """Metodos comunes heredados por todas las Clases que necesiten visibilidad"""
-    _vis = models.CharField(choices = VISIBILITY_CHOICES, default = 'public', max_length=10)
+    _vis = models.CharField(_(u"Visibilidad"), 
+                            choices = VISIBILITY_CHOICES, 
+                            default = 'private', 
+                            max_length=10)
     
     class Meta:
         abstract = True

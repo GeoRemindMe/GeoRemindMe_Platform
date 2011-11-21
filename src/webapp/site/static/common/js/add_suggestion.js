@@ -358,11 +358,10 @@ function instanceMap(){
     //Esta funciÃ³n crea un mapa nuevo
     if((typeof(default_marker_X) != "undefined") && (typeof(default_marker_Y) != "undefined"))
         var latlngStr=[default_marker_X,default_marker_Y]
-    else if(typeof eventID == 'undefined' && typeof (searchconfig_google['location']) != undefined){
-        var latlngStr = searchconfig_google['location'].split(",",2);
-    }
-    else
+    if(typeof eventID != 'undefined')
         var latlngStr = eventLocation.split(",",2);
+    else
+    	var latlngStr = [37.1767,-3.589933];
         
     var lat = parseFloat(latlngStr[0]);
     var lng = parseFloat(latlngStr[1]);
@@ -551,7 +550,7 @@ function loadGMaps(defaultX,defaultY,canvas) {
             defaultY=-3.597
     }    
     
-    var meters=searchconfig_google['radius']
+    var meters=6
     var zoom=11;
     $.each(scales,function(index,value){
         if(meters<value.meters){
@@ -933,7 +932,7 @@ function saveSuggestion(){
         
         $.ajax({
             type: "POST",
-            url: "/ajax/add/suggestion/",
+            url: "/ajax/suggestion/add/",
             data: jQuery.param(params),
             complete: function(msg){
                 GRM.nowait();
@@ -994,14 +993,6 @@ function placesAutocomplete(){
     
     var input = document.getElementById('place');
     
-    //Cargamos nuestras opciones de bÃºsqueda
-    var options = {
-        region: searchconfig_google['region_code'] 
-    }
-    
-    if(searchconfig_google['type']!='all')
-      options['types']=[ searchconfig_google['type'] ];
-
     //Fin cargamos opciones
     autocomplete = new google.maps.places.Autocomplete(input,options);
     autocomplete.bindTo('bounds', map);
@@ -2845,7 +2836,7 @@ $.fn.selection = function(start, end) {
  *   http://www.opensource.org/licenses/mit-license.php
  *   http://www.gnu.org/licenses/gpl.html
  *
- * Requires jQuery Autocomplete plugin by J�rn Zaefferer - see http://bassistance.de/jquery-plugins/jquery-plugin-autocomplete/
+ * Requires jQuery Autocomplete plugin by J�rn Zaefferer - see http://bassistance.de/jquery-plugins/jquery-plugin-autocomplete/
  * jquery.autocomplete.js requires a minor modification for geo_autocomplete to work, as shown in /lib/jquery.autocomplete_geomod.js
  * 
  */

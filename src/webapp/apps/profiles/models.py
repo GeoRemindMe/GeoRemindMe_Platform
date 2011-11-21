@@ -1,13 +1,10 @@
 #coding=utf-8
 
 
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
-from django.http import Http404
 from timezones.fields import TimeZoneField
 from userena.models import UserenaLanguageBaseProfile
 from userena.utils import get_gravatar
@@ -58,7 +55,8 @@ class UserProfile(UserenaLanguageBaseProfile):
     counter_supported = PositiveCounterField(_(u"Contador de votadas"),
                                                     default=0,
                                                     )
-    
+    last_location = models.PointField(_(u"Ultima localización usada"), blank=True, null=True)
+    favorite_location = models.PointField(_(u"Localización favorita"), blank=True, null=True)
     timezone = TimeZoneField(_(u"Zona horaria"))
     
     class Meta:

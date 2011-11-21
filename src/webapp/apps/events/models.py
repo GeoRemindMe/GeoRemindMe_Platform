@@ -17,13 +17,13 @@ add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
 
 class Event(models.Model):
     name = models.CharField(_(u"Nombre"), max_length=170)
-    description = models.TextField(_(u"Descripción"), max_length=1024)
+    description = models.TextField(_(u"Descripción"), max_length=1024, blank=True)
     user = models.ForeignKey(User, verbose_name=_(u"Usuario"))
     created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
     modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
     place = models.ForeignKey(Place, verbose_name=_(u"Sitio"))
-    date_starts = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True)
-    date_ends = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True)
+    date_starts = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True, null=True)
+    date_ends = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True, null=True)
     done = models.BooleanField(_(u"Finalizado"), default=False)
     
     class Meta:
@@ -44,7 +44,13 @@ class SuggestionManager(models.Manager):
         if 'to_twitter' in kwargs:
             del kwargs['to_twitter']
         obj = super(self.__class__, self).create(**kwargs)
+        EventFollower.objects.create(event=obj, user=obj.user)
         suggestion_new.send(sender=obj, to_facebook=to_facebook, to_twitter=to_twitter)
+        return obj
+        
+    def get_suggestions_by_follower(self, follower):
+        ids = EventFollower.objects.filter(user=follower.id).values_list('event_id', flat=True)
+        return Suggestion.objects.filter(id__in=ids).select_related('place')
 
 
 class Suggestion(Event, Visibility):

@@ -2,6 +2,10 @@
 
 from django import template
 from django.contrib.auth.models import User
+from django.core.cache import cache
+import httplib2
+
+
 register = template.Library()
 
 
@@ -137,8 +141,18 @@ formatted according to settings.DATE_FORMAT
 
 @register.simple_tag
 def embedded_avatar(username):
-    try:
-        user = User.objects.select_related('profile').get(username__iexact=username)
-        return user.profile.get_mugshot_url()
-    except:
-        return None
+    encoded_image = cache.get('%s_avatarcachebase64' % username)
+    if encoded_image is None:
+        try:
+            user = User.objects.select_related('profile').get(username__iexact=username)
+            url = user.profile.get_mugshot_url()
+            h = httplib2.Http(".cache")
+            response, content = h.request(url)
+            if response.status != 200:
+                raise Exception()
+            import base64
+            encoded_image = "data:image;base64,%s" % base64.b64encode(content)
+            cache.set('%s_avatarcachebase64' % username, encoded_image, 1235)
+        except:
+            return None
+    return encoded_image
