@@ -11,6 +11,8 @@ from timezones.fields import LocalizedDateTimeField
 from places.models import Place
 from signals import suggestion_new
 from webapp.site.models_utils import Visibility
+from webapp.site.funcs import INFO
+
 
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
@@ -46,6 +48,7 @@ class SuggestionManager(models.Manager):
         obj = super(self.__class__, self).create(**kwargs)
         EventFollower.objects.create(event=obj, user=obj.user)
         suggestion_new.send(sender=obj, to_facebook=to_facebook, to_twitter=to_twitter)
+        INFO("SUGERENCIA: creada nueva sugerencia %s %s" % (obj.id, obj.name))
         return obj
         
     def get_suggestions_by_follower(self, follower):
@@ -55,7 +58,7 @@ class SuggestionManager(models.Manager):
 
 class Suggestion(Event, Visibility):
     slug = AutoSlugField(populate_from=['name', 'place'], max_length = 50, unique=True)
-    _short_url = models.URLField(_(u"Web"))
+    _short_url = models.URLField(_(u"Web"), blank=True, default='')
     
     
     objects = SuggestionManager()
@@ -70,13 +73,13 @@ class Suggestion(Event, Visibility):
     
     @property
     def short_url(self):
-        if self._short_url is None:
+        if self._short_url == '':
             from django.contrib.sites.models import Site
             from libs.vavag import VavagRequest
             from django.conf import settings        
             try:
                 current_site = Site.objects.get_current()
-                client = VavagRequest(settings.VAVAG_ACCESS['user'], settings.VAVAG_ACCESS['key'])
+                client = VavagRequest(settings.VAVAG_PASSWORD['user'], settings.VAVAG_PASSWORD['key'])
                 
                 response = client.set_pack('http://%s%s' % (current_site.domain, self.get_absolute_url()))
                 self._short_url = response['packUrl']

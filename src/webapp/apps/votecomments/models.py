@@ -9,7 +9,25 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class VoteManager(models.Manager):
-    pass
+    def has_voted(self, user, instance):
+        instance_type = ContentType.objects.get_for_model(instance)
+        return self.filter(user = user,
+                        instance_c_type = instance_type,
+                        followee_id=instance.id, 
+                        ).exists()
+                        
+    def toggle_vote(self, user, instance):
+        instance_type = ContentType.objects.get_for_model(instance)
+        q = self.filter(user = user,
+                    instance_c_type = instance_type,
+                    followee_id=instance.id, 
+                    )
+        if q.exists():
+            q.delete()
+            return False
+        else:
+            self.create(user = user, instance = instance)
+            return True
 
 
 class Vote(models.Model):

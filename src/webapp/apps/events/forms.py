@@ -11,10 +11,10 @@ class SuggestionForm(forms.ModelForm):
                                      )
     to_twitter = forms.BooleanField(label=_(u"Compartir en Twitter"), required=False
                                      )
-    _vis = forms.CharField(required=False, initial='public')
+    visibility = forms.CharField(required=False, initial='public')
     class Meta:
         model = Suggestion
-        exclude = ('user', 'created', 'modified', '_short_url', 'place')
+        exclude = ('user', 'created', 'modified', '_short_url', 'place', '_vis')
         
     def clean(self):
         if self.cleaned_data['date_starts'] is not None and self.cleaned_data['date_ends']:
@@ -24,9 +24,9 @@ class SuggestionForm(forms.ModelForm):
         return self.cleaned_data
     
     def save(self, user, place = None):
-        if self.instance is None and place is None:
+        if self.instance.id is None and place is None:
             raise KeyError("place needed")
-        if self.instance is None: # sugerencia nueva
+        if self.instance.id is None: # sugerencia nueva
             suggestion = Suggestion.objects.create(
                                  name = self.cleaned_data['name'],
                                  description = self.cleaned_data['description'],
@@ -35,7 +35,7 @@ class SuggestionForm(forms.ModelForm):
                                  place = place,
                                  user = user, 
                                  done = self.cleaned_data.get('done', False),
-                                 _vis = self.cleaned_data['_vis'],
+                                 _vis = self.cleaned_data.get('visibility', 'public'),
                                  to_facebook = self.cleaned_data['to_facebook'],
                                  to_twitter = self.cleaned_data['to_twitter'],
                      )

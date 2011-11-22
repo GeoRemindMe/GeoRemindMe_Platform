@@ -41,7 +41,11 @@ def suggestion_edit(request, slug):
 
 def suggestion_detail(request, slug):
     try:
-        suggestion = Suggestion.objects.select_related('user', 
+        suggestion = Suggestion.objects.select_related(
+                                                       'user', 
+                                                       'place', 
+                                                       'place__city', 
+                                                       'place__city__region',
                                                        'place__city__region__country',
                                                        ).get(slug__iexact=slug)
     except Suggestion.DoesNotExist:

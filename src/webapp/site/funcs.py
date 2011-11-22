@@ -9,3 +9,8 @@ from django.conf import settings
 def DEBUG(msg):
     if settings.DEBUG:
         logger.debug(msg)
+
+        
+def INFO(msg):
+    logger.info(msg)
+

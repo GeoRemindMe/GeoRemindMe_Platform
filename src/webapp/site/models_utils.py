@@ -18,8 +18,9 @@ class Visibility(models.Model):
     
     class Meta:
         abstract = True
-
-    def _get_visibility(self):
+        
+    @property
+    def visibility(self):
         return self._vis
     
     def _is_public(self):

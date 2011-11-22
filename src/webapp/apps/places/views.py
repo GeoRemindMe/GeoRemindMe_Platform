@@ -1,6 +1,6 @@
 #coding=utf-8
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -27,11 +27,14 @@ def place_edit(request, slug):
     
 
 def place_detail(request, slug):
-    place = get_object_or_404(Place, slug__iexact=slug)
-    suggestions = place.suggestion_set.select_related()
+    try:
+        place = Place.objects.select_related('city__region__country').get(slug__iexact=slug)
+    except Place.DoesNotExist:
+        raise Http404
+    suggestions = place.suggestion_set.select_related('user')
     return render_to_response('places/place_detail.html',
                               {'place': place,
-                               'suggestions': suggestions
+                               'suggestions_q': suggestions,
                               }, 
                               context_instance = RequestContext(request))
 

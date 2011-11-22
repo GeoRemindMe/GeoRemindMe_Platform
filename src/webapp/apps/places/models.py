@@ -37,9 +37,9 @@ class Country(models.Model):
 
 #------------------------------------------------------------------------------ 
 class Region(models.Model):
-	name = models.CharField(_(u"Nombre"), max_length = 200)
+	name = models.CharField(_(u"Nombre"), max_length = 200, blank=True)
 	slug = AutoSlugField(populate_from=['name', 'country'], max_length = 50)
-	code = models.CharField(_(u"Codigo"), max_length = 10, db_index=True)
+	code = models.CharField(_(u"Codigo"), max_length = 10, db_index=True, blank=True)
 	country = models.ForeignKey(Country, verbose_name=_(u"País"),
 							related_name='regions')
 	objects = models.GeoManager()
@@ -142,9 +142,10 @@ class PlaceManager(models.GeoManager):
 				except Country.DoesNotExist:
 					country_obj = Country.objects.create(name=country['name'],
 														code=country['code'],
+														tld=country['code'].lower(),
 														population=1)
-					region_obj = Region.objects.create(name = region['name'],
-													code=region['code'], 
+					region_obj = Region.objects.create(name = region.get('name', ''),
+													code=region.get('code', ''), 
 													country = country_obj)
 					city_obj = City.objects.create(name=city, 
 												region=region_obj,
@@ -155,7 +156,7 @@ class PlaceManager(models.GeoManager):
 									)
 			place.name=search['result']['name']
 			place.location=location
-			place.street=search['result'].get('formatted_address')
+			place.adress=search['result'].get('formatted_address')
 			place.city= city_obj
 			place.google_places_reference=search['result']['reference']
 			place.google_places_id=search['result']['id']
@@ -163,7 +164,7 @@ class PlaceManager(models.GeoManager):
 		except Place.DoesNotExist:
 			place = Place.objects.create(name=search['result']['name'],
 							location=location,
-	                    	street=search['result'].get('formatted_address'),
+	                    	address=search['result'].get('formatted_address'),
 	                     	city= city_obj,
 	                      	google_places_reference=search['result']['reference'],
 	                       	google_places_id=search['result']['id'],
@@ -177,7 +178,7 @@ class Place(models.Model):
 	location = models.PointField(_(u"location"), blank=False)
 	city = models.ForeignKey(City, verbose_name=_(u"Ciudad"),
 							related_name="places")
-	street = models.CharField(_(u"Calle"), max_length=512, blank=True)
+	address = models.CharField(_(u"Calle"), max_length=512, blank=True, null=True)
 	phone = models.CharField(_(u"Teléfono"), max_length=32, blank=True)
 	user = models.ForeignKey(User, verbose_name=_(u"Usuario"),
 							related_name = "places")
@@ -192,7 +193,7 @@ class Place(models.Model):
 											db_index = True,
 											unique = True)
 	url = models.URLField(_(u"Web"), blank=True)
-	_short_url = models.URLField(_(u"Atajo en vavag"), blank=True)
+	_short_url = models.URLField(_(u"Atajo en vavag"), blank=True, default='')
 	created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
 	modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
 	
@@ -213,7 +214,7 @@ class Place(models.Model):
 	
 	@property
 	def short_url(self):
-		if self._short_url is None:
+		if self._short_url == '':
 			from django.contrib.sites.models import Site
 			from libs.vavag import VavagRequest
 			from django.conf import settings        

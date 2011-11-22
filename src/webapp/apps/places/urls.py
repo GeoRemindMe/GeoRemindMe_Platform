@@ -11,7 +11,7 @@ urlpatterns = patterns('',
        places_views.place_edit,
        name='place_place_edit'),
     # Ver place
-    url(r'^place/(?P<slug>[\.\w]+)/$',
+    url(r'^place/(?P<slug>[^/]+)/$',
        places_views.place_detail,
        name='places_place_detail'),
     # Añadir place

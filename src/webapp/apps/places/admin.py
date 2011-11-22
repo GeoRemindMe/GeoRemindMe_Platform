@@ -7,7 +7,7 @@ from django.conf import settings
 from models import * #@UnusedWildImport
 
 
-GMAP = GoogleMap(key=settings.API['google_maps_secure'], version='3')
+GMAP = GoogleMap(key=settings.GOOGLE_API_PASSWORD['google_maps_secure'], version='3')
 
 class GoogleAdmin(admin.ModelAdmin):#.options.OSMGeoAdmin):
     extra_js = [GMAP.api_url + GMAP.key]

@@ -290,10 +290,10 @@
                     {% if request.user.is_authenticated %}
                         <div id="nav-menu">
                         {% if user.username %}
-                            <a href="{% url2 in_facebook suggestions_suggestion_add %}" id="add-suggestion-btn"><img src="/static/common/img/transparent.gif">{%trans "Añadir sugerencia" %}</a>
+                            <a href="{% url2 in_facebook events_suggestion_add %}" id="add-suggestion-btn"><img src="/static/common/img/transparent.gif">{%trans "Añadir sugerencia" %}</a>
                                 <ul class="lavaLamp">
                                     <li class="{% active request dashboard %}"><a id="activity-icon" href="{% url2 in_facebook profiles_dashboard %}" title="Dashboard">{%trans "Actividad" %}</a></li>
-                                    <li class="{% active request user_suggestions %}"><a id="vault-icon" href="{% url2 in_facebook suggestions_suggestions_user request.user.username %}">{%trans "Tu mochila" %}</a></li>
+                                    <li class="{% active request user_suggestions %}"><a id="vault-icon" href="{% url2 in_facebook events_suggestions_user request.user.username %}">{%trans "Tu mochila" %}</a></li>
                                     <li class="{% active request notifications_section %}"><a id="notifications-icon" href="{% url2 in_facebook profiles_notifications %}">{% if notifications > 0 %}<strong><u>{%trans "Notificaciones" %}</u></strong>{% else %}{%trans "Notificaciones" %}{%endif%}</a></li>
 
                                 </ul>
