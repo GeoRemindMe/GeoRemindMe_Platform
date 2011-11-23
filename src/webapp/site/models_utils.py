@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 VISIBILITY_CHOICES = (
-          ('public', _('Publica')),
+          ('public', _('Pública')),
           ('private', _('Privada')),
           ('shared', _('Compartida')),
                       )
@@ -21,7 +21,7 @@ class Visibility(models.Model):
         
     @property
     def visibility(self):
-        return self._vis
+        return self.get__vis_display()
     
     def _is_public(self):
         if self._vis == 'public':

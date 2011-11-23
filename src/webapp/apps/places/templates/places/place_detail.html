@@ -3,8 +3,7 @@
 {% load l10n %}
 
 {% load tags %}
-{% with suggestions_q as suggestions %}
-{% block title %}{% blocktrans with place.name as place_name and place.city as city and suggestions|length as num_sugg %} {{place_name}}, {{city}} (Sugerencias: {{num_sugg}}){% endblocktrans %}{% endblock %}
+{% block title %}{% blocktrans with place.name as place_name and place.city as city and suggestions_q|length as num_sugg %} {{place_name}}, {{city}} (Sugerencias: {{num_sugg}}){% endblocktrans %}{% endblock %}
 {% block keywords %}{{place.city}},{{place.address}}, {% trans "sugerencias" %}{% endblock %}
 
 {% block extra_js %}
@@ -24,6 +23,7 @@
 {%endblock%}
 
 {% block body %}
+
     <div id="view-place">
         <div id="place-container">
             <h1 class="clear">{{place.name}}</h1>
@@ -55,7 +55,7 @@
                     </div>
                 
                 <ul class="comments">
-
+				{% with suggestions_q as suggestions %}
                     {% for s in suggestions %}
                     <li class="suggestion-element" {% if forloop.last %}style="border-bottom:1px dotted #BBBBBB"{% endif %}>
                         
@@ -84,6 +84,7 @@
                         </div>
                     </li>
                     {% endfor %}
+            {% endwith%}
                     
                     
                 </ul>
@@ -91,4 +92,3 @@
         </div>
     </div>
 {% endblock %}
-{% endwith%}

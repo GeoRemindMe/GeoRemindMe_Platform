@@ -1,9 +1,11 @@
 {% load tags %}
 {% load i18n %}
+
 {% comment %} 
     Mensaje nº 300
     300: Nueva sugerencia
 {% endcomment %} 
+
 <li class="msg-{{obj.msg_id}}">
     
     <div class="avatar">
@@ -19,10 +21,9 @@
             <div class="removable" value="{{obj.instance.id}}" type="suggestion"><a href="#">{% trans 'Borrar' %}</a></div>
             <span class="small-text">{% trans 'has creado la sugerencia:' %} </span>
         {% else %}
-            <span class="small-text"><a href="{% url2 in_facebook profiles_profile_public obj.username %}" class="dark-link">{{obj.username}}</a> {% trans 'sugiere:' %} </span>
+            <span class="small-text"><a href="{% url2 in_facebook profiles_profile_public obj.user.username %}" class="dark-link">{{obj.username}}</a> {% trans 'sugiere:' %} </span>
         {% endif %}
         
-
 
         <br><a class="readable link hoverlink" href="{% url2 in_facebook events_suggestion_detail obj.instance.slug %}">{{obj.instance}}</a><br>
 
@@ -41,7 +42,7 @@
             
         
             
-            {% if obj.instance.user.username != request.user.username and request.user.is_authenticated %}            
+            {% if obj.instance.user_id != request.user.id and request.user.is_authenticated %}            
                 | 
                 <span class="like-dislike" value="{{obj.instance.id}}" {% if obj.has_voted %}like="true"{%endif%} type="suggestion">
                     <img src="/static/common/img/transparent.gif" />

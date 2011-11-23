@@ -25,7 +25,9 @@ def suggestions_user(request, username):
     else:
         follower = request.user
     suggestions = Suggestion.objects.get_suggestions_by_follower(follower=follower)
-    return HttpResponse(','.join(s.__unicode__() for s in suggestions))
+    return render_to_response('events/suggestions_user.html',
+                              {'suggestions_q': suggestions},
+                              context_instance = RequestContext(request))
 
 
 @login_required

@@ -3,6 +3,7 @@
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson
+from django.contrib.auth.decorators import login_required
 
 from libs.decorators import ajax_request
 from forms import SuggestionForm
@@ -11,6 +12,7 @@ from places.models import Place
 
 
 @ajax_request
+@login_required
 def suggestion_add(request):
     """
     Añade o edita una sugerencia
@@ -38,3 +40,19 @@ def suggestion_add(request):
         suggestion = form.save(user=request.user, place=place)
         return HttpResponse(simplejson.dumps(suggestion), mimetype="application/json")
     return HttpResponseBadRequest(simplejson.dumps(form.errors), mimetype="application/json")
+
+
+@ajax_request
+@login_required
+def suggestion_follow(request):
+    eventid = request.POST.get('eventid', None)
+    if eventid is None:
+        return HttpResponseBadRequest('eventid needed')
+    suggestion = get_object_or_404(Suggestion, pk=eventid)
+    added = Suggestion.objects.toggle_follower(follower = request.user,
+                                             suggestion=suggestion)
+    if added is None:
+        return HttpResponseBadRequest()
+    else:
+        return HttpResponse(simplejson.dumps(added), mimetype="application/json")
+

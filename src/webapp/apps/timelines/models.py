@@ -74,7 +74,6 @@ class FollowerManager(models.Manager):
                 follower_deleted.send(sender=follower, followee=followee)
                 return False
             except:
-                raise
                 pass
             
         else:
@@ -83,7 +82,6 @@ class FollowerManager(models.Manager):
                 follower_added.send(sender=follower, followee=followee)
                 return True
             except:
-                raise
                 pass
         return None
     
@@ -93,7 +91,7 @@ class FollowerManager(models.Manager):
             followee_type = ContentType.objects.get_for_model(type_filter)
             ids = self.filter(follower_id=follower.id,
                                follower_c_type=follower_type,
-                               followee__followee_c_type=followee_type).values_list('followee_id', flat=True)
+                               followee_c_type=followee_type).values_list('followee_id', flat=True)
             return User.objects.filter(id__in=ids).select_related('profile')
         else:
             ids = self.filter(follower_id=follower.id,
@@ -106,7 +104,7 @@ class FollowerManager(models.Manager):
             followee_type = ContentType.objects.get_for_model(type_filter)
             ids = self.filter(followee_id=followee.id,
                                followee_c_type=followee_type,
-                               follower__followee_c_type=followee_type).values_list('follower_id', flat=True)
+                               follower_c_type=followee_type).values_list('follower_id', flat=True)
             return User.objects.filter(id__in=ids).select_related('profile')
         else:
             ids = self.filter(followee_id=followee.id,
@@ -139,6 +137,15 @@ class Follower(models.Model):
         
     def __unicode__(self):
         return "%s - %s - %s" % (self.follower, self.followee, self.created)
+    
+    def delete(self, *args, **kwargs):
+        timeline = Timeline.objects.filter(user_id = self.follower_id, 
+                                           content_type = self.followee_c_type, 
+                                           object_id = self.followe_id,
+                                           msg_id = self.msg_id)
+        for t in timeline:
+            t.delete()
+        super(self.__class__, self).delete()
 
 
 #------------------------------------------------------------------------------ 
@@ -337,6 +344,7 @@ class Timeline(models.Model):
     
     def delete(self, *args, **kwargs):
         TimelineFollower.objects.filter(timeline=self).delete()
+        TimelineNotification.objects.filter(timeline=self).delete()
         super(self.__class__, self).delete()
         
 

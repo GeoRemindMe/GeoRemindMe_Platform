@@ -118,24 +118,30 @@ class PlaceManager(models.GeoManager):
 						search['result']['geometry']['location']['lat'])
 		try:
 			city = client._get_city(search['result'].get('address_components'))
-			city_obj = City.objects.get(name__iexact = city)
+			region = client._get_region(search['result'].get('address_components'))
+			country = client._get_country(search['result'].get('address_components'))
+			city_obj = City.objects.get(name__iexact = city, region__country__code__iexact=country['code'])
 		except City.DoesNotExist:
 			try:
-				region = client._get_region(search['result'].get('address_components'))
 				if region is not None:
-					region_obj = Region.objects.get(name__iexact = region['name'])
+					region_obj = Region.objects.get(name__iexact = region['name'], country__code__iexact=country['code'])
 					city_obj = City.objects.create(name=city, 
 												region=region_obj,
 												population = 1)
 				else:
-					city_obj = City.objects.create(name=city,
+					region_obj = Region.objects.get(name = '', country__code__iexact=country['code'])
+					city_obj = City.objects.create(name=city, 
+												region=region_obj,
 												population = 1)
 			except Region.DoesNotExist:
 				try: 
-					country = client._get_country(search['result'].get('address_components'))
 					country_obj = Country.objects.get(code__iexact = country['code'])
-					region_obj = Region.objects.create(name = region, 
-													country = country_obj)
+					if region is not None:
+						region_obj = Region.objects.create(name = region['name'], 
+														country = country_obj)
+					else:
+						region_obj = Region.objects.create(name = '', 
+														country = country_obj)
 					city_obj = City.objects.create(name=city, 
 												region=region_obj,
 												population = 1)

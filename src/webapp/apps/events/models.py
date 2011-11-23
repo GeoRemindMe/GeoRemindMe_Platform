@@ -6,10 +6,12 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
+
 from fields import AutoSlugField
 from timezones.fields import LocalizedDateTimeField
 from places.models import Place
-from signals import suggestion_new
+from timelines.models import Timeline
+from signals import suggestion_new, suggestion_following_deleted, suggestion_following_added
 from webapp.site.models_utils import Visibility
 from webapp.site.funcs import INFO
 
@@ -53,12 +55,35 @@ class SuggestionManager(models.Manager):
         
     def get_suggestions_by_follower(self, follower):
         ids = EventFollower.objects.filter(user=follower.id).values_list('event_id', flat=True)
-        return Suggestion.objects.filter(id__in=ids).select_related('place')
+        return Suggestion.objects.filter(id__in=ids).select_related('user',
+                                                                    'place__city__region__country')
+    
+    def toggle_follower(self, follower, suggestion):
+        suggestion_type = ContentType.objects.get_for_model(suggestion)
+        q = EventFollower.objects.filter(user = follower, 
+                                         event_c_type = suggestion_type,
+                                         event_id = suggestion.id)
+        if q.exists():
+            try:
+                q.delete()
+                suggestion_following_deleted.send(sender=suggestion, follower=follower)
+                return False
+            except:
+                pass
+            
+        else:
+            try:
+                EventFollower.objects.create(event=suggestion, user=follower)
+                suggestion_following_added.send(sender=suggestion, followee=follower)
+                return True
+            except:
+                pass
+        return None
 
 
 class Suggestion(Event, Visibility):
     slug = AutoSlugField(populate_from=['name', 'place'], max_length = 50, unique=True)
-    _short_url = models.URLField(_(u"Web"), blank=True, default='')
+    _short_url = models.URLField(_(u"Atajo en vavag"), blank=True, default='')
     
     
     objects = SuggestionManager()
@@ -69,7 +94,7 @@ class Suggestion(Event, Visibility):
         
     @models.permalink
     def get_absolute_url(self):
-        return ('suggestions_suggestion_detail', (), { 'slug': self.slug })
+        return ('events_suggestion_detail', (), { 'slug': self.slug })
     
     @property
     def short_url(self):
@@ -82,12 +107,32 @@ class Suggestion(Event, Visibility):
                 client = VavagRequest(settings.VAVAG_PASSWORD['user'], settings.VAVAG_PASSWORD['key'])
                 
                 response = client.set_pack('http://%s%s' % (current_site.domain, self.get_absolute_url()))
+                return 'http://%s%s' % (current_site.domain, self.get_absolute_url())
                 self._short_url = response['packUrl']
                 self.save()
             except Exception:
                 self._short_url = None
                 return 'http://%s%s' % (current_site.domain, self.get_absolute_url())
         return self._short_url
+    
+    def delete(self):
+        from django.conf import settings
+        suggestion_c_type = ContentType.objects.get_for_model(self)
+        if self.user_id == settings.GEOREMINDME_USER_ID:
+            eventfollowers = EventFollower.objects.filter(event_c_type__pk = suggestion_c_type.id,
+                                                          event_id = self.id)
+            for e in eventfollowers:
+                e.delete()
+            super(self.__class__, self).delete()
+        
+        timeline = Timeline.objects.filter(user_id = self.user_id,
+                                content_type__pk = suggestion_c_type.id,
+                                object_id = self.id)
+        for t in timeline:
+            t.delete()
+        self.user_id = settings.GEOREMINDME_USER_ID
+        self.save()
+        
         
 
 #------------------------------------------------------------------------------ 
@@ -112,6 +157,16 @@ class EventFollower(models.Model):
         
     def __unicode__(self):
         return u"%s - %s - %s" % (self.user, self.event, self.created)
+    
+    def delete(self, *args, **kwargs):
+        timelines = Timeline.objects.filter(user_id = self.user_id,
+                                           msg_id = 303,
+                                           event_c_type__pk = self.event_c_type_id,
+                                           object_id = self.event_id
+                                           )
+        for t in timelines:
+            t.delete()
+        super(self.__class__, self).delete(*args, **kwargs)
     
     
 #===========================================================================

@@ -33,7 +33,4 @@ def new_follower(sender,  followee, **kwargs):
 
 @receiver(follower_deleted)
 def deleted_follower(sender, followee, **kwargs):
-    Timeline.objects.del_all_timelines(user = sender,
-                                       msg_id = 100,
-                                       instance = followee)
     DEBUG('TIMELINE: %s ya no sigue a %s' % (sender, followee))

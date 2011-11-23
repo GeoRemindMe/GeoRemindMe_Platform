@@ -10,14 +10,14 @@ urlpatterns = patterns('',
     url(r'^!/(?P<username>[\.\w]+)/suggestions/$',
        suggestions_views.suggestions_user,
        name='events_suggestions_user'),
+    # Ver sugerencia
+    url(r'^suggestion/(?P<slug>[-\w]+)/$',
+       suggestions_views.suggestion_detail,
+       name='events_suggestion_detail'),
     # Editar sugerencia
     url(r'^suggestion/(?P<slug>[^/]+)/edit/$',
        suggestions_views.suggestion_edit,
        name='events_suggestion_edit'),
-    # Ver sugerencia
-    url(r'^suggestion/(?P<slug>[^/]+)/$',
-       suggestions_views.suggestion_detail,
-       name='events_suggestion_detail'),
     # Añadir sugerencias
     url(r'^suggestions/add/$',
        suggestions_views.suggestion_add,
