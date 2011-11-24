@@ -15,4 +15,6 @@ class GoogleAdmin(admin.ModelAdmin):#.options.OSMGeoAdmin):
     search_fields = ['name']
 
 
-admin.site.register(Place, admin.GeoModelAdmin)
+admin.site.register(Country, admin.GeoModelAdmin)
+admin.site.register(Region, admin.GeoModelAdmin)
+admin.site.register(City, admin.GeoModelAdmin)
