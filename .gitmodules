@@ -1,0 +1,9 @@
+[submodule "src/webapp/modules/cities"]
+	path = src/webapp/modules/cities
+	url = git@github.com:GeoRemindMe/cities.git
+[submodule "src/webapp/site/libs/mapsServices"]
+	path = src/webapp/site/libs/mapsServices
+	url = git@github.com:GeoRemindMe/mapsServices.git
+[submodule "src/webapp/site/libs/vavag"]
+	path = src/webapp/site/libs/vavag
+	url = git@github.com:GeoRemindMe/vavagClient.git

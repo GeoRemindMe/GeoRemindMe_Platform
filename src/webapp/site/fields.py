@@ -29,7 +29,7 @@ class AutoSlugField(SlugField):
     """
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
-        kwargs.setdefault('editable', True)
+        kwargs.setdefault('editable', False)
 
         populate_from = kwargs.pop('populate_from', None)
         if populate_from is None:
