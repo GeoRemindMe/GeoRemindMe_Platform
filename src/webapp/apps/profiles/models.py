@@ -5,16 +5,39 @@ from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import F
 from timezones.fields import TimeZoneField
 from userena.models import UserenaLanguageBaseProfile
+from userena.managers import UserenaBaseProfileManager
 from userena.utils import get_gravatar
 from socialregistration.contrib.facebook.models import FacebookProfile
 from socialregistration.contrib.twitter.models import TwitterProfile
 
-from webapp.site.fields import PositiveCounterField
+from fields import PositiveCounterField
 
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^timezones.fields.TimeZoneField",])
+
+
+class UserProfileManager(UserenaBaseProfileManager):
+    def set_suggested(self, user, value=1):
+        return self._set_counter(user=user, counter='counter_suggested', value=value)
+    
+    def set_followers(self, user, value=1):
+        return self._set_counter(user=user, counter='counter_suggested', value=value)
+    
+    def set_followings(self, user, value=1):
+        return self._set_counter(user=user, counter='counter_suggested', value=value)
+    
+    def set_supported(self, user, value=1):
+        return self._set_counter(user=user, counter='counter_suggested', value=value)
+    
+    def _set_counter(self, user, counter, value=1):
+        return self.filter(
+                            user = user
+                           ).update(
+                                    **{counter: F(counter) + value}
+                                    )
 
 class UserProfile(UserenaLanguageBaseProfile):
     AVATAR_CHOICES = (
@@ -58,6 +81,8 @@ class UserProfile(UserenaLanguageBaseProfile):
     last_location = models.PointField(_(u"Ultima localización usada"), blank=True, null=True)
     favorite_location = models.PointField(_(u"Localización favorita"), blank=True, null=True)
     timezone = TimeZoneField(_(u"Zona horaria"))
+    
+    objects = UserProfileManager()
     
     class Meta:
         verbose_name = _(u"Perfil de usuario")

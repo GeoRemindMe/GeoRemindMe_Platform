@@ -17,6 +17,7 @@ def create_georemindme_user(sender, **kwargs):
     except User.DoesNotExist:
         User.objects.create(pk=settings.GEOREMINDME_USER_ID,
             username='georemindme')
+        
 
 signals.post_syncdb.connect(create_georemindme_user, sender=guardian_app,
     dispatch_uid="mainApp.management.create_georemindme_user")

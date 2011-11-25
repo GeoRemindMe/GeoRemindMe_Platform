@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 
 from libs.decorators import ajax_request
 from forms import SuggestionForm
@@ -55,4 +56,18 @@ def suggestion_follow(request):
         return HttpResponseBadRequest()
     else:
         return HttpResponse(simplejson.dumps(added), mimetype="application/json")
+    
+
+@ajax_request
+@login_required
+def suggestion_delete(request):
+    eventid = request.POST.get('eventid', None)
+    if eventid is None:
+        return HttpResponseBadRequest('eventid needed')
+    suggestion = get_object_or_404(Suggestion, pk=eventid)
+    if suggestion.user__id != request.user.id:
+        raise PermissionDenied
+    deleted = suggestion.delete()
+    return HttpResponse(simplejson.dumps(deleted), mimetype="application/json")
+    
 

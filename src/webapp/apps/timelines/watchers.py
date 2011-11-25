@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 
-from models import Timeline, NotificationSettings
+from models import Timeline, NotificationSettings, TimelineNotification
 from funcs import DEBUG
 from signals import follower_added, follower_deleted
         
@@ -24,10 +24,13 @@ def create_notificationssettings(sender, instance, created, **kwargs):
 
 @receiver(follower_added)
 def new_follower(sender,  followee, **kwargs):
-    Timeline.objects.add_timeline(sender, 
+    t = Timeline.objects.add_timeline(sender, 
                                   msg_id=100,
                                   instance=followee,
                                   visible=True)
+    
+    TimelineNotification.objects.add_notification(timeline=t)
+    
     DEBUG('TIMELINE: %s ahora sigue a %s' % (sender, followee))
           
 

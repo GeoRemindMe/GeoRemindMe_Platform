@@ -5,9 +5,9 @@ from django.utils.translation import ugettext_lazy as _
 
 
 VISIBILITY_CHOICES = (
-          ('public', _('Pública')),
-          ('private', _('Privada')),
-          ('shared', _('Compartida')),
+          ('public', _(u'Pública')),
+          ('private', _(u'Privada')),
+          ('shared', _(u'Compartida')),
                       )
 class Visibility(models.Model):
     """Metodos comunes heredados por todas las Clases que necesiten visibilidad"""

@@ -7,5 +7,6 @@ virtualme/*
 src/fixtures/*
 src/fixtures/dev_appserver.datastore
 src/webapp/settings.py
+src/webapp/.cache
 *deployme*
 db

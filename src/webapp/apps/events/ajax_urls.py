@@ -12,4 +12,7 @@ urlpatterns = patterns('',
    url(r'^suggestion/follow/$',
        events_views.suggestion_follow,
        name='events_suggestion_follow_ajax'),
+   url(r'^suggestion/delete/$',
+       events_views.suggestion_delete,
+       name='events_suggestion_delete_ajax'),
    )

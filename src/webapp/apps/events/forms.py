@@ -2,6 +2,7 @@
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import PermissionDenied
 
 from models import Suggestion
 
@@ -26,6 +27,8 @@ class SuggestionForm(forms.ModelForm):
     def save(self, user, place = None):
         if self.instance.id is None and place is None:
             raise KeyError("place needed")
+        if self.instance.id is not None and self.instance.user__id != user.id:
+            raise PermissionDenied
         if self.instance.id is None: # sugerencia nueva
             suggestion = Suggestion.objects.create(
                                  name = self.cleaned_data['name'],
@@ -47,7 +50,7 @@ class SuggestionForm(forms.ModelForm):
             self.instance.place = place
             self.instance.user = user
             self.instance.done = self.cleaned_data.get('done', False)
-            self.instance._vis = self.cleaned_data['_vis']
+            self.instance._vis = self.cleaned_data.get('visibility', 'public'),
             self.instance.save()
             suggestion = self.instance
         return suggestion

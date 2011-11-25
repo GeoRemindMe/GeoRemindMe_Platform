@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 
 from timelines.models import Timeline
-from webapp.site.funcs import DEBUG
+from models import UserProfile
+from funcs import DEBUG
 
 
 @receiver(post_save, sender=User)
@@ -15,6 +16,11 @@ def new_user_registered(sender, instance, created, **kwargs):
     escribe el primer timeline
     """
     if instance.id <> -1 and created:
+        try:
+            instance.get_profile()
+        except:
+            UserProfile.objects.create(user=instance)
+            
         Timeline.objects.add_timeline(user = instance,
                                           msg_id = 0,
                                           instance = instance,

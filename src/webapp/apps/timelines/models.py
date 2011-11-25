@@ -7,10 +7,11 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import F
+from django.db import transaction
 
 from timezones.fields import LocalizedDateTimeField
 from signals import timeline_added, follower_added, follower_deleted, notification_added
-from profiles.models import UserProfile
+
 
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
@@ -349,7 +350,7 @@ class Timeline(models.Model):
         
 
 #------------------------------------------------------------------------------ 
-from django.db import transaction
+
 
 class TimelineFollowerManager(models.Manager):
     @transaction.commit_manually
@@ -388,30 +389,33 @@ class TimelineFollower(models.Model):
     def __unicode__(self):
         return "%s - %d - %s" % (self.follower, self.timeline_id, self.created)
     
-from tasks import share_timeline
 
 
 class TimelineNotificationManager(models.Manager):
-    def add_notification(self, timeline, user):
-        obj = self.create()(timeline = timeline,
-                            user = user
-                            )
+    def add_notification(self, timeline, user=None):
+        if user is None:
+            obj = self.create(timeline = timeline,
+                              user = timeline.user
+                              )
+        else:
+            obj = self.create(timeline = timeline,
+                              user = user
+                              )
         notification_added.send(sender=obj)
-        return obj
         UserProfile.objects.filter(
                                    user = user
                                    ).update(
                                             counter_notifications = F('counter_notifications') + 1
                                             )
         return obj
-    
+
     def get_by_user(self, user):
         user_type = ContentType.objects.get_for_model(user)
         return Timeline.objects.filter(
                                        timelinenotification__user_c_type = user_type,
                                        timelinenotification__user_id = user.id,
                                        ).select_related(depth=1)
-        
+
 
 class TimelineNotification(models.Model):
     timeline = models.ForeignKey(Timeline,
@@ -434,3 +438,6 @@ class TimelineNotification(models.Model):
         
     def __unicode__(self):
         return "%s - %d - %s" % (self.user, self.timeline_id, self.created)
+    
+
+from profiles.models import UserProfile

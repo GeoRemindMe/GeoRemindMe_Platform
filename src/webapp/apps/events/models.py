@@ -6,14 +6,14 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
-
-from fields import AutoSlugField
 from timezones.fields import LocalizedDateTimeField
 from places.models import Place
 from timelines.models import Timeline
-from signals import suggestion_new, suggestion_following_deleted, suggestion_following_added
+from signals import suggestion_new, suggestion_following_deleted, suggestion_following_added, suggestion_deleted
 from webapp.site.models_utils import Visibility
-from webapp.site.funcs import INFO
+from funcs import INFO
+from fields import AutoSlugField
+
 
 
 from south.modelsinspector import add_introspection_rules
@@ -48,7 +48,6 @@ class SuggestionManager(models.Manager):
         if 'to_twitter' in kwargs:
             del kwargs['to_twitter']
         obj = super(self.__class__, self).create(**kwargs)
-        EventFollower.objects.create(event=obj, user=obj.user)
         suggestion_new.send(sender=obj, to_facebook=to_facebook, to_twitter=to_twitter)
         INFO("SUGERENCIA: creada nueva sugerencia %s %s" % (obj.id, obj.name))
         return obj
@@ -84,7 +83,6 @@ class SuggestionManager(models.Manager):
 class Suggestion(Event, Visibility):
     slug = AutoSlugField(populate_from=['name', 'place'], max_length = 50, unique=True)
     _short_url = models.URLField(_(u"Atajo en vavag"), blank=True, default='')
-    
     
     objects = SuggestionManager()
     
@@ -130,6 +128,7 @@ class Suggestion(Event, Visibility):
                                 object_id = self.id)
         for t in timeline:
             t.delete()
+        suggestion_deleted.send(sender=self)
         self.user_id = settings.GEOREMINDME_USER_ID
         self.save()
         

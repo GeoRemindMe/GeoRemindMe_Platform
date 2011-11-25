@@ -16,7 +16,6 @@ from endless_pagination.decorators import page_template
 from profiles.forms import UserProfileForm
 from timelines.models import Timeline, Follower, TimelineNotification
 from models import UserProfile
-from watchers import *
 
 
 @login_required

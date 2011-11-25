@@ -1,8 +1,21 @@
 #coding=utf-8
 
 from django.contrib import admin
+from django.contrib.contenttypes import generic
 from models import Suggestion, EventFollower
 
 
-admin.site.register(EventFollower)
-admin.site.register(Suggestion)
+class EventFollowerInline(generic.GenericStackedInline):
+    model = EventFollower
+    extra = 1
+    ct_field = "event_c_type"
+    ct_fk_field = "event_id"
+
+class SuggestionAdmin(admin.ModelAdmin):
+    inlines = (EventFollowerInline,)
+    model = Suggestion
+    fields = ['_vis', 'name', 'description', 'user', 'place', 'done', 'date_starts', 'date_ends', '_short_url']
+    readonly_fields  = ['created', 'modified', 'slug']
+    
+    
+admin.site.register(Suggestion, SuggestionAdmin)
