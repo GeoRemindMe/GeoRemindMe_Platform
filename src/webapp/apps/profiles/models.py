@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import F
+from django.db import transaction
 from timezones.fields import TimeZoneField
 from userena.models import UserenaLanguageBaseProfile
 from userena.managers import UserenaBaseProfileManager
@@ -24,13 +25,27 @@ class UserProfileManager(UserenaBaseProfileManager):
         return self._set_counter(user=user, counter='counter_suggested', value=value)
     
     def set_followers(self, user, value=1):
-        return self._set_counter(user=user, counter='counter_suggested', value=value)
+        return self._set_counter(user=user, counter='counter_followers', value=value)
     
     def set_followings(self, user, value=1):
-        return self._set_counter(user=user, counter='counter_suggested', value=value)
+        return self._set_counter(user=user, counter='counter_followings', value=value)
     
     def set_supported(self, user, value=1):
-        return self._set_counter(user=user, counter='counter_suggested', value=value)
+        return self._set_counter(user=user, counter='counter_supported', value=value)
+    
+    @transaction.commit_manually
+    def set_notifications(self, user, value=1):
+        if value > 0:
+            return self._set_counter(user=user, counter='counter_notifications', value=value)
+        try:
+            obj = self.get(user=user)
+            obj.counter_notifications += value
+            obj.save()
+        except:
+            transaction.rollback()
+        else:
+            transaction.commit()
+        return obj.counter_notifications
     
     def _set_counter(self, user, counter, value=1):
         return self.filter(

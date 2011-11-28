@@ -155,7 +155,7 @@ class PositiveCounterField(IntegerField):
         return super(self.__class__, self).formfield(**defaults)
 
     def pre_save(self, model_instance, add):
-        if model_instance < 0:
+        if getattr(model_instance, self.attname) < 0:
             return 0
         else:
             return super(self.__class__, self).pre_save(model_instance, add)

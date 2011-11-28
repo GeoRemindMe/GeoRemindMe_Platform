@@ -9,7 +9,6 @@ from django.db.models import F
 from profiles.monkeys import *
 from userena.views import profile_edit as userena_profile_edit
 from userena.views import signup as userena_signup
-from userena.views import signin as userena_signin
 from endless_pagination.decorators import page_template
 
 
@@ -25,7 +24,8 @@ def dashboard(request, extra_context=None):
 #        request.user.get_profile()
 #    except:
 #        UserProfile.objects.create(user=request.user)
-#    Timeline.objects.add_timeline(request.user, 0, request.user, visible=True)  
+#    Timeline.objects.add_timeline(request.user, 0, request.user, visible=True)
+    
     context = {
                'timelines' : Timeline.objects.get_chronology(user=request.user),
                }
@@ -43,6 +43,7 @@ def notifications(request, extra_context=None):
     context = {
                'timelines': TimelineNotification.objects.get_by_user(request.user) 
                }
+    UserProfile.objects.set_notifications(request.user, value=-10)
 #    UserProfile.objects.filter(
 #                               user = request.user
 #                               ).update(

@@ -395,7 +395,7 @@ class TimelineNotificationManager(models.Manager):
     def add_notification(self, timeline, user=None):
         if user is None:
             obj = self.create(timeline = timeline,
-                              user = timeline.user
+                              user = timeline.instance.user
                               )
         else:
             obj = self.create(timeline = timeline,

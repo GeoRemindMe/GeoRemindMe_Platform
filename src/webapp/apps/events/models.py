@@ -12,12 +12,11 @@ from timelines.models import Timeline
 from signals import suggestion_new, suggestion_following_deleted, suggestion_following_added, suggestion_deleted
 from webapp.site.models_utils import Visibility
 from funcs import INFO
-from fields import AutoSlugField
-
+from fields import AutoSlugField, PositiveCounterField
 
 
 from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
+add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField", "^fields.PositiveCounterField"])
 
 class Event(models.Model):
     name = models.CharField(_(u"Nombre"), max_length=170)
@@ -83,6 +82,10 @@ class SuggestionManager(models.Manager):
 class Suggestion(Event, Visibility):
     slug = AutoSlugField(populate_from=['name', 'place'], max_length = 50, unique=True)
     _short_url = models.URLField(_(u"Atajo en vavag"), blank=True, default='')
+    counter_followers = PositiveCounterField(_(u"Contador de seguidores"),
+                                            default=0,
+                                            blank=True
+                                            )
     
     objects = SuggestionManager()
     

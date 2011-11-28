@@ -39,6 +39,7 @@ def added_suggestion_following(sender, follower, **kwargs):
                                   msg_id = 303,
                                   instance = sender,
                                   visible = True if sender._is_public() else False)
+    UserProfile.objects.set_supported(follower)
     TimelineNotification.objects.add_notification(timeline=t)
     DEBUG('TIMELINE: usuario %s sigue sugerencia %s' % (follower, sender))
     
@@ -49,4 +50,5 @@ def deleted_suggestion_following(sender, follower, **kwargs):
     EventFollower.objects.filter(user = follower, 
                                  event_c_type = suggestion_type,
                                  event_id = sender.id).delete()
+    UserProfile.objects.set_supported(follower, value=-1)
     DEBUG('TIMELINE: usuario %s deja de seguir sugerencia %s' % (follower, sender))
