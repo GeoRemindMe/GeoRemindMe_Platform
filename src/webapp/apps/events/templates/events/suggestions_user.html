@@ -51,7 +51,7 @@ showHelp('#suggestions_lists','#tabMenu-toolbox','left');
         <div class="help-icon"><img src="/static/common/img/transparent.gif" alt="Help" id="help-activity"></div>
         <ul id="tabMenu">
             <li id="your_suggestions" class="active">{%trans "Sugerencias" %} (<span id="suggestions-tab-counter">{{suggestions.1|length}}</span>)</li>
-            <li id="suggestions_lists">{%trans "Listas" %} (<span id="lists-tab-counter">{{lists|length}}</span>)</li>
+            <li id="suggestions_lists">{%trans "Listas" %} (<span id="lists-tab-counter">{{lists}}</span>)</li>
         </ul>
         <div id="content">
                 <!-- YOUR SUGGESTIONS -->
@@ -69,14 +69,14 @@ showHelp('#suggestions_lists','#tabMenu-toolbox','left');
                         <span class="btn dropDownBtn">
                             <span class="save-at">{%trans "Guardar en" %} <img src="/static/common/img/transparent.gif"></span>
                             <ul class="submenu" style="display:none" id="dropdown-list">
-                                {% if lists %}
+                            {% with lists_q as lists %}
                                     {% for obj in lists %}
                                         {% if obj.user.username = request.user.username %}
                                             <!-- Solo se muestran mis listas -->
                                             <li id="listid-{{obj.id}}">{{obj.name}} (<span class="list-{{obj.id}}-counter">{{obj.keys|length}}</span> {%trans "sugerencias" %})</li>
                                         {% endif %}
                                     {% endfor %}
-                                {% endif %}
+                            {% endwith %}
                                 <li class="new-list-btn">
                                     <span id="text">{%trans "Nueva lista..." %}</span>
                                     <span class="new-list" style="display:none"><input type="text" /></span><div id="cancel-link" onclick="closeDropdown()" style="display:none">{%trans "Cancelar" %}</div>
@@ -263,6 +263,7 @@ showHelp('#suggestions_lists','#tabMenu-toolbox','left');
                 
                 
                 <!-- LISTS -->
+                {% with lists_q as lists %}
                 <span id="suggestions_lists_content" class="tab-content hidden">
                     <div id="header">
                         <span class="selectCheckBox"><input type="checkbox" id="checkBoxList_all" /></span>
@@ -357,6 +358,7 @@ showHelp('#suggestions_lists','#tabMenu-toolbox','left');
                         </div>
                     
                 </span>
+                {% endwith %}
                 <!-- END LISTS -->
             </table>
         </div>

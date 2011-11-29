@@ -17,6 +17,7 @@ urlpatterns = patterns('',
    url(r'', include('timelines.urls')), # notificaciones timeline
    url(r'', include('places.urls')), # places
    url(r'', include('events.urls')), # events
+   url(r'', include('lists.urls')), # events
    url(r'ajax/', include('timelines.ajax_urls')), # timelines AJAX
    url(r'ajax/', include('profiles.ajax_urls')), # profiles AJAX
    url(r'ajax/', include('events.ajax_urls')), # events AJAX

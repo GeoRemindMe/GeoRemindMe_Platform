@@ -11,12 +11,14 @@ from places.models import Place
 from timelines.models import Timeline
 from signals import suggestion_new, suggestion_following_deleted, suggestion_following_added, suggestion_deleted
 from webapp.site.models_utils import Visibility
+
 from funcs import INFO
 from fields import AutoSlugField, PositiveCounterField
 
 
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField", "^fields.PositiveCounterField"])
+
 
 class Event(models.Model):
     name = models.CharField(_(u"Nombre"), max_length=170)
@@ -77,6 +79,16 @@ class SuggestionManager(models.Manager):
             except:
                 pass
         return None
+    
+    def set_followers(self, suggestion, value=1):
+        return self._set_counter(suggestion=suggestion, counter='counter_followers', value=value)
+    
+    def _set_counter(self, suggestion, counter, value=1):
+        return self.filter(
+                            pk = suggestion.pk
+                           ).update(
+                                    **{counter: models.F(counter) + value}
+                                    )
 
 
 class Suggestion(Event, Visibility):
@@ -161,9 +173,8 @@ class EventFollower(models.Model):
         return u"%s - %s - %s" % (self.user, self.event, self.created)
     
     def delete(self, *args, **kwargs):
-        timelines = Timeline.objects.filter(user_id = self.user_id,
-                                           msg_id = 303,
-                                           event_c_type__pk = self.event_c_type_id,
+        timelines = Timeline.objects.filter(user__pk = self.user_id,
+                                           content_type = self.event_c_type_id,
                                            object_id = self.event_id
                                            )
         for t in timelines:
