@@ -25,7 +25,6 @@ def dashboard(request, extra_context=None):
 #    except:
 #        UserProfile.objects.create(user=request.user)
 #    Timeline.objects.add_timeline(request.user, 0, request.user, visible=True)
-    
     context = {
                'timelines' : Timeline.objects.get_chronology(user=request.user),
                }

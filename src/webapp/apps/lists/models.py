@@ -72,7 +72,7 @@ class ListSuggestionManager(models.Manager):
     def create_from_ids(self, *args, **kwargs):
         if 'suggestions' in kwargs:
             not_repeated  = set(kwargs['suggestions'])
-            kwargs['suggestions'] = self.filter(pk__in=not_repeated)
+            kwargs['suggestions'] = Suggestion.objects.filter(pk__in=not_repeated)
             return self.create(*args, **kwargs)
         raise KeyError
     
@@ -116,7 +116,15 @@ class ListSuggestion(ListGeneric, Visibility):
                 self._short_url = None
                 return 'http://%s%s' % (current_site.domain, self.get_absolute_url())
         return self._short_url
+    
+    def set_suggestions(self, ids=[]):
+        ids_set = set(ids)
+        suggestions = Suggestion.objects.filter(pk__in = ids_set)
+        self.suggestions = suggestions
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('lists_suggestion_detail', (), { 'id': self.id })
 
 class SuggestionInList(models.Model):
     listsuggestion = models.ForeignKey(ListSuggestion)
@@ -147,7 +155,7 @@ class ListFollower(models.Model):
         verbose_name_plural = _(u"Seguimientos de listas")
         
     def __unicode__(self):
-        return u"%s - %s - %s" % (self.user, self.event, self.created)
+        return u"%s - %s" % (self.user, self.created)
     
     def delete(self, *args, **kwargs):
         timelines = Timeline.objects.filter(user__pk=self.user_id,

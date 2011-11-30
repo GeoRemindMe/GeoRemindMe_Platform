@@ -10,7 +10,6 @@ from models import ListSuggestion
 from profiles.models import User
 
 
-
 @login_required
 def listsuggestion_edit(request, id):
     listobj = get_object_or_404(ListSuggestion, 
@@ -24,13 +23,7 @@ def listsuggestion_edit(request, id):
 
 def listsuggestion_detail(request, id):
     try:
-        listobj = ListSuggestion.objects.select_related(
-                                                       'user',
-                                                       'suggestions'
-                                                       'place', 
-                                                       'place__city', 
-                                                       'place__city__region',
-                                                       'place__city__region__country',
+        listobj = ListSuggestion.objects.select_related(depth=4
                                                        ).get(id=id)
     except ListSuggestion.DoesNotExist:
         raise Http404
@@ -41,12 +34,3 @@ def listsuggestion_detail(request, id):
                               context_instance = RequestContext(request))
 
 
-@login_required
-def suggestion_add(request):
-    return render_to_response('events/suggestion_add.html', 
-                              {},
-                              context_instance = RequestContext(request))
-
-
-def suggestions_list(request):
-    pass

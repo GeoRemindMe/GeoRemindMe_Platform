@@ -14,12 +14,4 @@ urlpatterns = patterns('',
     url(r'^ls/(?P<id>[^/]+)/$',
        list_views.listsuggestion_detail,
        name='lists_suggestion_detail'),
-    # Añadir sugerencias
-    url(r'^suggestions/add/$',
-       list_views.suggestion_add,
-       name='events_suggestion_add'),
-    # Listar sugerencias
-    url(r'^suggestions/$',
-       list_views.suggestions_list,
-       name='events_suggestions_list'),
    )

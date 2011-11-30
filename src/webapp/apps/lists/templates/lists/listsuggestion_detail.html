@@ -91,13 +91,13 @@
 
 <div id="list-box" class="clear">
         <p class="clear-left big lists-title">
-            <strong>{% trans "Lista:" %} "{{list}}"</strong></p>
+            <strong>{% trans "Lista:" %} "{{list.name}}"</strong></p>
             <div id="suggestion-info">
                 {% if list.description %}
                     <p>{% trans "Descripción:" %} <span id="list-description">{{list.description}}</span></p>
                 {% endif %}
                 <ul>
-                    <li id="owner"><img src="{% embedded_avatar list.user.username %}" alt="{{list.user.username}}"> <a href="{% url2 in_facebook public_profile list.user %}" title="{{list.user}}" class="black-link">Autor: {{list.user}}</a></li>
+                    <li id="owner"><img src="{% embedded_avatar list.user.username %}" alt="{{list.user.username}}"> <a href="{% url2 in_facebook profiles_profile_public list.user.username %}" title="{{list.user}}" class="black-link">Autor: {{list.user}}</a></li>
                     <li class="suggestionx16">{% trans "Sugerencias:" %} {{suggestions|length}}</li>
                     <li class="saved">{% trans "Veces guardada:" %} <span id="followers-counter">{{list.counters.followers}}</span></li>
                         {% comment %}
@@ -128,8 +128,8 @@
                                 </div>
                             </li>
                         {% else %}
-                            {% if list.user.username == request.user.username %}
-                                <li><a href="{% url2 in_facebook user_suggestions %}" class="hoverlink">{% trans "Editar desde la mochila" %}</a></li>
+                            {% if list.user_id == request.user.id %}
+                                <li><a href="{% url2 in_facebook events_suggestions_user request.user.username %}" class="hoverlink">{% trans "Editar desde la mochila" %}</a></li>
                             {% endif %}
                         {% endif %}
                     </ul>
@@ -264,7 +264,7 @@
                 </span>
                 <div class="comment-content">
                     <span class="msg">
-                        <a href="{% url2 in_facebook public_profile user.username %}" class="dark-link">{{user.username}}</a>:
+                        <a href="{% url2 in_facebook profiles_profile_public user.username %}" class="dark-link">{{user.username}}</a>:
                         ${msg}
                     </span>
                 

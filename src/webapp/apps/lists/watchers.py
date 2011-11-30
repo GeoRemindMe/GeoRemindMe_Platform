@@ -18,7 +18,7 @@ def new_list(sender, **kwargs):
     Captura la señal de un nuevo usuario registrado,
     escribe el primer timeline
     """
-    ListFollower.objects.create(listobj=sender, user=sender.user)
+    ListFollower.objects.create(list_instance=sender, user=sender.user)
     Timeline.objects.add_timeline(user = sender.user,
                                   msg_id = 350,
                                   instance = sender,
