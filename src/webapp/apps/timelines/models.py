@@ -212,26 +212,12 @@ class TimelineManager(models.Manager):
             :param user: Usuario a buscar
             :type user: :class:`django.contrib.auth.User`
         """
+        from efficient.utils import *
         user_type = ContentType.objects.get_for_model(user)
         queryset = self.filter(timelinefollower__follower_c_type = user_type,
-                                       timelinefollower__follower_id = user.id)
-        return queryset.select_related()
-        generics = {}
-        for item in queryset:
-            generics.setdefault(item.content_type_id, set()).add(item.object_id)
-
-        content_types = ContentType.objects.in_bulk(generics.keys())
-
-        relations = {}
-        for ct, fk_list in generics.items():
-            ct_model = content_types[ct].model_class()
-            relations[ct] = ct_model.objects.in_bulk(list(fk_list))
-
-        for item in queryset:
-            setattr(item, '_content_object_cache', 
-                    relations[item.content_type_id][item.object_id])
-        
+                                       timelinefollower__follower_id = user.id).select_related(depth=3)
         return queryset
+        return get_generic_relations(queryset, 'instance')
         
 
 

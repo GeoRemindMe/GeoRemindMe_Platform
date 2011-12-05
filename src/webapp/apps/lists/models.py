@@ -107,9 +107,7 @@ class ListSuggestion(ListGeneric, Visibility):
             try:
                 current_site = Site.objects.get_current()
                 client = VavagRequest(settings.VAVAG_PASSWORD['user'], settings.VAVAG_PASSWORD['key'])
-                
                 response = client.set_pack('http://%s%s' % (current_site.domain, self.get_absolute_url()))
-                return 'http://%s%s' % (current_site.domain, self.get_absolute_url())
                 self._short_url = response['packUrl']
                 self.save()
             except Exception:
@@ -125,6 +123,7 @@ class ListSuggestion(ListGeneric, Visibility):
     @models.permalink
     def get_absolute_url(self):
         return ('lists_suggestion_detail', (), { 'id': self.id })
+
 
 class SuggestionInList(models.Model):
     listsuggestion = models.ForeignKey(ListSuggestion)
