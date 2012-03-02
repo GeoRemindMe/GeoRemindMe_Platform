@@ -9,8 +9,8 @@
 <li class="msg-{{obj.msg_id}}">
     
     <div class="avatar">
-        <a href="{% url2 in_facebook profiles_profile_public obj.user.username %}" title="{{obj.user.username}}">
-            <img class="user-picture" src="{% embedded_avatar obj.user.username %}" alt="{{obj.user.username}} avatar"/>
+        <a href="{% url2 in_facebook profiles_profile_public obj.actor.username %}" title="{{obj.actor.username}}">
+            <img class="user-picture" src="{% embedded_avatar obj.actor.username %}" alt="{{obj.actor.username}} avatar"/>
         </a>
     </div>
     <div class="timeline-msg">

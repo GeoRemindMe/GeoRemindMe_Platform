@@ -75,6 +75,7 @@ urlpatterns = patterns('',
        userena_views.direct_to_user_template,
        {'template_name': 'userena/password_complete.html'},
        name='profiles_password_change_complete'),
+
     # Change email and confirm it
     url(r'^!/(?P<username>[\.\w]+)/email/$',
        userena_views.email_change,
@@ -90,4 +91,8 @@ urlpatterns = patterns('',
     url(r'^!/(?P<username>[\.\w]+)/confirm-email/(?P<confirmation_key>\w+)/$',
        userena_views.email_confirm,
        name='profiles_email_confirm'),
+   url(r'^!/(?P<username>[\.\w]+)/activate/(?P<activation_key>\w+)/$',
+       userena_views.activate,
+       {'success_url': 'profiles_dashboard'},
+       name='userena_activate'),
    )

@@ -1,10 +1,13 @@
 #coding=utf-8
 
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.gis.measure import D
+from django.db.models import F
+from django.contrib.gis.geos import Point
 
 from timezones.fields import LocalizedDateTimeField
 from places.models import Place
@@ -40,7 +43,7 @@ class Event(models.Model):
 
 
 #------------------------------------------------------------------------------ 
-class SuggestionManager(models.Manager):
+class SuggestionManager(models.GeoManager):
     def create(self, **kwargs):
         to_facebook = kwargs.get('to_facebook', False)
         to_twitter = kwargs.get('to_twitter', False)
@@ -89,6 +92,13 @@ class SuggestionManager(models.Manager):
                            ).update(
                                     **{counter: models.F(counter) + value}
                                     )
+                           
+    def nearest_to(self, lat, lon, accuracy=100):
+        p = Point(float(lon), float(lat))
+        return self.nearest_to_point(p, accuracy = accuracy)
+    
+    def nearest_to_point(self, point, accuracy=100):
+        return self.filter(place__location__distance_lte=(point, D(m=accuracy)))
 
 
 class Suggestion(Event, Visibility):

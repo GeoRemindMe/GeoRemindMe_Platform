@@ -13,6 +13,9 @@ from profiles.models import User
 
 @login_required
 def suggestions_user(request, username):
+    """
+    USER'S BACKPACK
+    """
     if username != request.user.username:
         try:
             user = User.objects.select_related('profile').get(
@@ -35,6 +38,9 @@ def suggestions_user(request, username):
 
 @login_required
 def suggestion_edit(request, slug):
+    """
+    EDIT A SUGGESTION
+    """
     suggestion = get_object_or_404(Suggestion, 
                                    user = request.user,
                                    slug__iexact = slug)
@@ -45,6 +51,9 @@ def suggestion_edit(request, slug):
 
 
 def suggestion_detail(request, slug):
+    """
+    VIEW DETAILS FROM A SUGGESTION
+    """
     try:
         suggestion = Suggestion.objects.select_related('user', 
                                                        'place__city__region__country',
@@ -60,6 +69,9 @@ def suggestion_detail(request, slug):
 
 @login_required
 def suggestion_add(request):
+    """
+    ADD A NEW SUGGESTION
+    """
     return render_to_response('events/suggestion_add.html', 
                               {},
                               context_instance = RequestContext(request))

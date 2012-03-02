@@ -29,4 +29,5 @@ urlpatterns = patterns('',
    url(r'^admin/', include(admin.site.urls)),
    url(r'^admin_tools/', include('admin_tools.urls')),
    url(r'^translations/', include('datatrans.urls')),
+   url(r'^api/', include('api.urls')),
 )
