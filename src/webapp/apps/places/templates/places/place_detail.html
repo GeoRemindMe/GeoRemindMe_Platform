@@ -1,0 +1,94 @@
+{% extends "generic/base_generic.html" %}
+{% load i18n %}
+{% load l10n %}
+
+{% load tags %}
+{% block title %}{% blocktrans with place.name as place_name and place.city as city and suggestions_q|length as num_sugg %} {{place_name}}, {{city}} (Sugerencias: {{num_sugg}}){% endblocktrans %}{% endblock %}
+{% block keywords %}{{place.city}},{{place.address}}, {% trans "sugerencias" %}{% endblock %}
+
+{% block extra_js %}
+
+    <script type="text/javascript">
+        <!-- Definimos la variable global necesaria para pedir las fotos a Panoramio -->
+        latlngStr = "{{place.location.y}},{{place.location.x}}".split(",",2);
+    </script>
+    
+    {% if request.META.REMOTE_ADDR = "127.0.0.1" %}
+        <script type="text/javascript" src="/static/common/js/view_place.js"></script>
+    {% else %}
+        <script type="text/javascript" src="/static/common/js/view_place.min.js"></script>
+    {% endif %}
+    
+    
+{%endblock%}
+
+{% block body %}
+
+    <div id="view-place">
+        <div id="place-container">
+            <h1 class="clear">{{place.name}}</h1>
+            <div id="place-details">
+                <p><strong>{% trans 'Dirección' %}</strong>: {{place.address}}</p>
+                {% localize off %}
+                <a href="http://maps.google.com/maps?q={{place.location.y}},{{place.location.x}}&hl=en&ie=UTF8&z=16"><img src="http://maps.googleapis.com/maps/api/staticmap?center={{place.location}}&zoom=14&size=260x147&maptype=satellite
+&markers=color:red%7C{{place.location}}&sensor=false"></a>
+
+            </div>
+            <div id="place-pictures">
+                <p>{% trans 'Fotos de la zona' %}</p>
+                <div id="wapiblock"><div id="panoramio-imgs"></div></div>
+            </div>
+            <div class="clear"><span id="panoramio-tos"></span></div>
+            {% endlocalize %}
+        </div>
+        <div>
+<div id="list-box" class="clear">
+                <p class="big suggestions-title popular">
+                    <img src="/static/common/img/transparent.gif">{% blocktrans with place.name as place_name %} Sugerencias de usuarios en "{{place_name}}" {% endblocktrans %}
+                </p>
+                <div class="clear" id="action-bar">
+                    <ul>
+                        <li id="print-icon"><a href="?print" target="_blank" class="hoverlink"><img src="/static/common/img/transparent.gif">{% trans 'Imprimir sugerencias' %}</a></li>
+                        {%if user.username %}
+                            <li class="suggestion"><a href="{%url2 in_facebook events_suggestion_add %}?{{place.location}}" class="hoverlink">{% trans 'Nueva sugerencia a este sitio' %}</a></li>
+                        {%endif%}
+                    </div>
+                
+                <ul class="comments">
+{% with suggestions_q as suggestions %}
+                    {% for s in suggestions %}
+                    <li class="suggestion-element" {% if forloop.last %}style="border-bottom:1px dotted #BBBBBB"{% endif %}>
+                        
+                        
+                        
+                        <span class="user"><img src="{% embedded_avatar s.user.username %}" alt="{{s.user.username}} avatar"></span>
+                        <div class="timeline-msg">
+                            
+                            <a href="{% url2 in_facebook profiles_profile_public s.user.username %}" class="dark-link">{% blocktrans with s.user.username as username %} {{username}}</a> sugiere:{% endblocktrans %}<br>
+                            
+                            <span class="msg"><a href="{% url2 in_facebook events_suggestion_detail s.slug %}" class="hoverlink">{{s.name}}</a></span>
+                            <span class="timestamp">{{s.created|naturaltime}} </span>
+                            <span class="like-dislike" value="{{s.id}}" {% if s.has_voted %}like="true"{%endif%} type="suggestion" style="display:none">
+                            {% if s.user.username != user.username and request.user.is_authenticated %}
+                            &nbsp;-
+                            <span class="dislike">
+                                <span class="hoverlink">{% trans 'Ya no me gusta' %}</span>
+                                <span class="text like-text {% if not s.has_voted %}increase{% endif %}">{{s.counters.votes}}</span> {% trans 'personas' %}
+                            </span>
+                            
+                            <span class="like">
+                                <span class="hoverlink">{% trans 'Me gusta' %}</span>
+                            </span>
+                            {% endif %}
+                        </span>
+                        </div>
+                    </li>
+                    {% endfor %}
+            {% endwith%}
+                    
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
