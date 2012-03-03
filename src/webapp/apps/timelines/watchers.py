@@ -49,13 +49,13 @@ def deleted_follower(sender, instance, **kwargs):
 @receiver(pre_delete)
 def deleted_object_in_timeline(sender, instance, **kwargs):
     instance_ct = ContentType.objects.get_for_model(instance)
-    
-    Timeline.objects.filter(Q(objetive_c_type=instance_ct, objetive_id=instance.id) 
-                            | Q(result_c_type=instance_ct, result_id=instance.id)
+    if type(instance.pk) is int:
+        Timeline.objects.filter(Q(objetive_c_type=instance_ct, objetive_id=instance.pk) 
+                            | Q(result_c_type=instance_ct, result_id=instance.pk)
                             ).delete()
-    UserProfile.objects.set_followers(user=instance.followee, value=-1)
-    UserProfile.objects.set_followings(user=instance.follower, value=-1)
+        UserProfile.objects.set_followers(user=instance.followee, value=-1)
+        UserProfile.objects.set_followings(user=instance.follower, value=-1)
     
-    DEBUG('TIMELINE: %s ya no sigue a %s' % (instance.follower, instance.followee))
+        DEBUG('TIMELINE: %s ya no sigue a %s' % (instance.follower, instance.followee))
     
 

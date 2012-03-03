@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import F
+from django.db.models import F, Q
 from django.db import transaction
 
 from timezones.fields import LocalizedDateTimeField
@@ -162,8 +162,6 @@ class TimelineManager(models.Manager):
                                 **kwargs
                                 )
             
-        # el usuario sigue a sus propios timelines
-        TimelineFollower.objects.create(timeline=timeline, follower=actor)
         return timeline
         
     def del_all_timelines(self, actor, msg_id, objetive):
@@ -225,8 +223,8 @@ class TimelineManager(models.Manager):
             actor = user
         actor_ct = ContentType.objects.get_for_model(actor)
 
-        q = self.get_query_set().filter(timelinefollowers__follower_c_type = actor_ct,
-                                       timelinefollowers__follower_id = actor.id).select_related(depth=3)
+        q = self.get_query_set().filter(Q(actor_c_type=actor_ct, actor_id = actor.id) | Q(timelinefollowers__follower_c_type = actor_ct,
+                                       timelinefollowers__follower_id = actor.id)).select_related(depth=3)
         return q
         #return get_generic_relations(queryset, 'instance')
         
@@ -387,7 +385,7 @@ class TimelineFollower(models.Model):
     
     follower_c_type = models.ForeignKey(ContentType,
                                         verbose_name = _(u"Tipo de objeto seguidor"),
-                                        related_name = "timelinefollowings")
+                                        related_name = "+")
     follower_id = models.IntegerField(_(u"Identificador del seguidor"))
     follower = generic.GenericForeignKey('follower_c_type', 'follower_id',) # clave generica para cualquier modelo
     
@@ -461,5 +459,15 @@ class TimelineNotification(models.Model):
     def __unicode__(self):
         return "%s - %d - %s" % (self.actor, self.timeline_id, self.created)
     
-
+GenericModels = ['auth.User']
+from django.db.models import get_model
+for model in GenericModels:
+    model = get_model(*model.split('.'))
+    opts = model._meta
+    for field in ('actor', 'objetive', 'result'):
+        generic.GenericRelation(Timeline, content_type_field="%s_content_type" % field,
+                                object_id_field='%s_id' % field,
+                                related_name='timeline_with_%s_as_%s' % ( opts.module_name,
+                                                                          field)
+                                ).contribute_to_class(model, '%s_in_timelines' % field)
 from profiles.models import UserProfile
