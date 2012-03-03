@@ -459,7 +459,7 @@ class TimelineNotification(models.Model):
     def __unicode__(self):
         return "%s - %d - %s" % (self.actor, self.timeline_id, self.created)
     
-GenericModels = ['auth.User']
+GenericModels = ['auth.User', 'events.Suggestion', 'places.Place']
 from django.db.models import get_model
 for model in GenericModels:
     model = get_model(*model.split('.'))
