@@ -57,7 +57,7 @@ def suggestion_detail(request, slug):
     try:
         suggestion = Suggestion.objects.select_related('user', 
                                                        'place__city__region__country',
-                                                       ).get(slug__iexact=slug)
+                                                       ).get(slug__iexact=slug, _vis='public')
     except Suggestion.DoesNotExist:
         raise Http404
     if not suggestion._is_public() and suggestion.user_id != request.user.id:

@@ -71,10 +71,17 @@ def api_places_near(request, lat, lon, accuracy=100):
 
 
 @jsonrpc_method('suggestions_near(lat=Number, lon=Number, accuracy=Number) -> Object', validate=False)
-def api_suggestion_near(request, lat, lon, accuracy=100):
+def api_suggestions_near(request, lat, lon, accuracy=100):
     suggestions = Suggestion.objects.nearest_to(lat=lat, lon=lon, accuracy=accuracy)
     json_serializer = serializers.get_serializer("json")()
     data = json_serializer.serialize(suggestions, ensure_ascii=False)
+    return data
+
+@jsonrpc_method('suggestion_detail(pk=Number) -> Object', validate=False)
+def api_suggestion_detail(request, pk):
+    suggestion = Suggestion.objects.filter(pk=pk, _vis='public')
+    json_serializer = serializers.get_serializer("json")()
+    data = json_serializer.serialize(suggestion, ensure_ascii=False)
     return data
 
 
@@ -83,4 +90,11 @@ def api_city_current(request, lat, lon):
     city = City.objects.current(lat=lat, lon=lon)
     return city if city else None
 
+
+@jsonrpc_method('backpack()', validate=True, authenticated=True)
+def api_user_backpack(request):
+    backpack = Suggestion.objects.get_suggestions_by_follower(follower=request.user)
+    json_serializer = serializers.get_serializer("json")()
+    data = json_serializer.serialize(backpack, ensure_ascii=False)
+    return data
   
