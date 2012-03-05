@@ -10,7 +10,7 @@ from django.db.models import F, Q
 from django.db import transaction
 
 from timezones.fields import LocalizedDateTimeField
-from efficient.utils import get_generic_relations
+from modules.efficient.utils import get_generic_relations
 
 
 from south.modelsinspector import add_introspection_rules
@@ -186,7 +186,8 @@ class TimelineManager(models.Manager):
             
         """
         c_type = ContentType.objects.get_for_model(objetive)
-        return self.filter(objetive_id=objetive.id, content_type=c_type, visible=visible).select_related(depth=1)#.iterator()
+        q= self.filter(objetive_id=objetive.id, content_type=c_type, visible=visible)
+        return get_generic_relations(q, ['actor', 'objetive', 'result'])
     
     def get_by_user(self, user, visible=True, all=False):
         """
@@ -206,9 +207,8 @@ class TimelineManager(models.Manager):
         
         q = self.get_query_set().filter(actor_c_type = actor_ct, actor_id = actor.id)
         if not all: # todo el timeline, visible y no visible
-            return q.filter(visible=visible).select_related(depth=1)#.iterator()
-        else:
-            return q.select_related(depth=1)#.iterator()
+            q = q.filter(visible=visible)
+        return get_generic_relations(q, ['actor', 'objetive', 'result'])
     
     def get_chronology(self, user):
         """
@@ -370,7 +370,6 @@ class TimelineFollowerManager(models.Manager):
             for instance in instances:
                 instance.save()
         except:
-            raise
             transaction.rollback()
         else:
             transaction.commit()
