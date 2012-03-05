@@ -457,5 +457,18 @@ class TimelineNotification(models.Model):
     def __unicode__(self):
         return "%s - %d - %s" % (self.actor, self.timeline_id, self.created)
     
-
+GenericModels = ['auth.User', 'events.Suggestion', 'places.Place', 'events.EventFollower']
+# from django-activity-stream
+from django.db.models import get_model
+for model in GenericModels:
+    model = get_model(*model.split('.'))
+    opts = model._meta
+    for field in ('actor', 'objetive', 'result'):
+        generic.GenericRelation(Timeline, content_type_field="%s_c_type" % field,
+                                object_id_field='%s_id' % field,
+                                related_name='timelines_with_%s_as_%s' % ( opts.module_name,
+                                                                          field)
+                                ).contribute_to_class(model, '%s_in_timelines' % field)
+        setattr(Timeline, 'timelines_with_%s_as_%s' % (opts.module_name,
+                                                       field), None)
 from profiles.models import UserProfile
