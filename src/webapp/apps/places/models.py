@@ -36,23 +36,25 @@ class PlaceManager(models.GeoManager):
         try:
             city = client._get_city(search['result'].get('address_components'))
             region = client._get_region(search['result'].get('address_components'))
+            if region is None:
+                region = city
             country = client._get_country(search['result'].get('address_components'))
-            city_obj = City.objects.get(name__iexact = city, region__country__code__iexact=country['code'])
+            city_obj = City.objects.get(name__iexact = city, region__country__code=country['code'])
         except City.DoesNotExist:
             try:
                 if region is not None:
-                    region_obj = Region.objects.get(name__iexact = region['name'], country__code__iexact=country['code'])
+                    region_obj = Region.objects.get(name__iexact = region['name'], country__code=country['code'])
                     city_obj = City.objects.create(name=city, 
                                                 region=region_obj,
                                                 population = 1)
                 else:
-                    region_obj = Region.objects.get(name = '', country__code__iexact=country['code'])
+                    region_obj = Region.objects.get(name = '', country__code=country['code'])
                     city_obj = City.objects.create(name=city, 
                                                 region=region_obj,
                                                 population = 1)
             except Region.DoesNotExist:
                 try: 
-                    country_obj = Country.objects.get(code__iexact = country['code'])
+                    country_obj = Country.objects.get(code = country['code'])
                     if region is not None:
                         region_obj = Region.objects.create(name = region['name'], 
                                                         country = country_obj)
@@ -65,7 +67,7 @@ class PlaceManager(models.GeoManager):
                 except Country.DoesNotExist:
                     country_obj = Country.objects.create(name=country['name'],
                                                         code=country['code'],
-                                                        tld=country['code'].lower(),
+                                                        tld=country['code'],
                                                         population=1)
                     region_obj = Region.objects.create(name = region.get('name', ''),
                                                     code=region.get('code', ''), 
@@ -88,9 +90,9 @@ class PlaceManager(models.GeoManager):
             place = Place.objects.create(name=search['result']['name'],
                             location=location,
                             address=search['result'].get('formatted_address'),
-                             city= city_obj,
-                              google_places_reference=search['result']['reference'],
-                               google_places_id=search['result']['id'],
+                            city= city_obj,
+                            google_places_reference=search['result']['reference'],
+                            google_places_id=search['result']['id'],
                             user = kwargs['user']
                              )
         return place
@@ -107,11 +109,11 @@ class Place(models.Model):
     user = models.ForeignKey(User, verbose_name=_(u"Usuario"),
                             related_name = "places")
     google_places_reference = models.CharField(_(u"Referencia de Google Places"),
-                                             max_length=232, 
+                                             max_length=512, 
                                              blank=True,
                                              unique=True)
     google_places_id = models.CharField(_(u"ID de Google Places"), 
-                                            max_length=232, 
+                                            max_length=512, 
                                             blank=True,
                                             db_index = True,
                                             unique = True)

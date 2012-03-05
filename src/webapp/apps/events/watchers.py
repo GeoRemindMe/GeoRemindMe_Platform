@@ -19,10 +19,11 @@ def new_suggestion(sender, instance, created, **kwargs):
     escribe el primer timeline
     """
     if created:
-        EventFollower.objects.create(event=instance, user=instance.user)
-        Timeline.objects.add_timeline(user = instance.user,
+        f = EventFollower.objects.create(event=instance, user=instance.user)
+        Timeline.objects.add_timeline(actor = instance.user,
                                       msg_id = 300,
-                                      instance = instance,
+                                      objetive = instance,
+                                      result = f,
                                       visible = True if instance._is_public() else False)
         DEBUG('TIMELINE: creada nueva sugerencia %s' % instance)
         
@@ -34,18 +35,21 @@ def deleted_suggestion(sender, instance, **kwargs):
         
 @receiver(post_save, sender=EventFollower)
 def added_suggestion_following(sender, instance, **kwargs):
-    t = Timeline.objects.add_timeline(user = instance.user,
-                                  msg_id = 303,
-                                  objetive = instance,
-                                  visible = True if sender._is_public() else False)
+    if instance.user_id != instance.event.user_id:
+        t = Timeline.objects.add_timeline(actor = instance.user,
+                                      msg_id = 303,
+                                      objetive = instance.event,
+                                      result = instance,
+                                      visible = True if instance.event._is_public() else False)
+        TimelineNotification.objects.add_notification(timeline=t)
     UserProfile.objects.set_supported(instance.user)
-    instance.__class__.objects.set_followers(instance.event)
-    TimelineNotification.objects.add_notification(timeline=t)
+    instance.event.__class__.objects.set_followers(instance.event)
+    
     DEBUG('TIMELINE: usuario %s sigue evento %s' % (instance.user, instance))
     
     
 @receiver(pre_delete, sender=EventFollower)
 def deleted_suggestion_following(sender, instance, **kwargs):
     UserProfile.objects.set_supported(instance.user, value=-1)
-    instance.__class__.objects.set_followers(instance.event, value=-1)
+    instance.event.__class__.objects.set_followers(instance.event, value=-1)
     DEBUG('TIMELINE: usuario %s deja de seguir evento %s' % (instance.user, instance))

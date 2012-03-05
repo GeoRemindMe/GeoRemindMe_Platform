@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import simplejson
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.core import serializers
 
 from libs.decorators import ajax_request
 from forms import SuggestionForm
@@ -39,7 +40,9 @@ def suggestion_add(request):
                                          user = request.user
                                          )
         suggestion = form.save(user=request.user, place=place)
-        return HttpResponse(simplejson.dumps(suggestion), mimetype="application/json")
+        json_serializer = serializers.get_serializer("json")()
+        data = json_serializer.serialize([suggestion], ensure_ascii=False)
+        return HttpResponse(data, mimetype="application/json")
     return HttpResponseBadRequest(simplejson.dumps(form.errors), mimetype="application/json")
 
 
