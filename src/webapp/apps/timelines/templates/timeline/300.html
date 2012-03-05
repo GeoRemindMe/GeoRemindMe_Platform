@@ -18,17 +18,17 @@
         {% comment %}  Solo si el mensaje ha sido generado por el usuario y no por el sistema se podrá borrar {% endcomment %} 
         
         {% if obj.instance.user_id = request.user.id %}
-            <div class="removable" value="{{obj.instance.id}}" type="suggestion"><a href="#">{% trans 'Borrar' %}</a></div>
+            <div class="removable" value="{{obj.objetive_id}}" type="suggestion"><a href="#">{% trans 'Borrar' %}</a></div>
             <span class="small-text">{% trans 'has creado la sugerencia:' %} </span>
         {% else %}
-            <span class="small-text"><a href="{% url2 in_facebook profiles_profile_public obj.user.username %}" class="dark-link">{{obj.username}}</a> {% trans 'sugiere:' %} </span>
+            <span class="small-text"><a href="{% url2 in_facebook profiles_profile_public obj.actor.username %}" class="dark-link">{{obj.actor.username}}</a> {% trans 'sugiere:' %} </span>
         {% endif %}
         
 
-        <br><a class="readable link hoverlink" href="{% url2 in_facebook events_suggestion_detail obj.instance.slug %}">{{obj.instance}}</a><br>
+        <br><a class="readable link hoverlink" href="{% url2 in_facebook events_suggestion_detail obj.objetive.slug %}">{{obj.objetive}}</a><br>
 
         {% if obj.instance.place.slug %}
-            <span class="suggestionPlace">{% trans 'En ' %}<a href="{% url2 in_facebook places_place_detail obj.instance.place.slug %}" class="dark-link">{{obj.instance.place.name}}</a>, {{obj.instance.place.city.name}}</span>
+            <span class="suggestionPlace">{% trans 'En ' %}<a href="{% url2 in_facebook places_place_detail obj.objetive.place.slug %}" class="dark-link">{{obj.objetive.place.name}}</a>, {{obj.objetive.place.city.name}}</span>
         {% endif %}
 
 
@@ -38,13 +38,13 @@
             {% if request.user.is_authenticated %}
                 | <span class="focusInput hoverlink comment">{% trans 'Comentar' %}</span> 
             {% endif %}
-            | <a href="{% url2 in_facebook events_suggestion_detail obj.instance.slug %}" class="details"><img src="/static/common/img/transparent.gif" />{% trans 'Ver sugerencia' %}</a>  
+            | <a href="{% url2 in_facebook events_suggestion_detail obj.objetive.slug %}" class="details"><img src="/static/common/img/transparent.gif" />{% trans 'Ver sugerencia' %}</a>  
             
         
             
-            {% if obj.instance.user_id != request.user.id and request.user.is_authenticated %}            
+            {% if obj.objetive.user_id != request.user.id and request.user.is_authenticated %}            
                 | 
-                <span class="like-dislike" value="{{obj.instance.id}}" {% if obj.has_voted %}like="true"{%endif%} type="suggestion">
+                <span class="like-dislike" value="{{obj.objetive_id}}" {% if obj.has_voted %}like="true"{%endif%} type="suggestion">
                     <img src="/static/common/img/transparent.gif" />
                     <span class="dislike">
                         <span class="hoverlink">{% trans 'Ya no me gusta' %}</span> 
@@ -55,7 +55,7 @@
                     </span>
                 </span>
                     <img src="/static/common/img/transparent.gif" />
-                    | <span title="{% trans 'Guardar en favoritos' %}"  class="remember-forget" value="{{obj.instance.id}}" {%if obj.user_follower%}remember="true"{%endif%}>
+                    | <span title="{% trans 'Guardar en favoritos' %}"  class="remember-forget" value="{{obj.objetive_id}}" {%if obj.user_follower%}remember="true"{%endif%}>
                     <span class="remember">{% trans 'Guardar' %}</span>
                     <span class="forget">{% trans 'Guardada' %}</span>
                 </span>
@@ -65,12 +65,12 @@
     </div>
     {% comment %}  Si hay comentarios en la sugerencia {% endcomment %} 
 
-    <div class="comment-box clear" value="{{obj.instance.id}}">
+    <div class="comment-box clear" value="{{obj.objetive_id}}">
 
         {% if obj.comments.1|length and obj.comments.1|length > 2 %}
             <div class="show-all-comments">{% blocktrans with obj.comments.1|length as counter %}Ver los {{counter}} comentarios {% endblocktrans %}</div>
         {% endif %}
-        <ul id="commentList-{{obj.instance.id}}">
+        <ul id="commentList-{{obj.instance_id}}">
             {% if obj.comments.1 %}
                 {% for c in obj.comments.1 reversed %}
                     <li {% if forloop.revcounter > 2 %} class="long-list suggestion-comment" {% else %} class="suggestion-comment" {% endif %} >

@@ -49,6 +49,9 @@ def get_related_objects(queryset, relation_name):
 
 def get_generic_relations(queryset, related_name='content_object'):
     """
+    @jneight: UPDATED TO SUPPORT MODEL WITH MORE THAN ONE GENERICFOREIGNKEY
+    
+    
     Get the objects generically related to each element in a queryset.
 
     This is the 'forwards' relationship: ie, the queryset elements themselves
@@ -66,23 +69,23 @@ def get_generic_relations(queryset, related_name='content_object'):
     content types used in the queryset.
     """
     # find the GenericForeignKey we're interested in
-    rel = None
+    if type(related_name) != type([]):
+        raise TypeError()
+    rels = []
     for relation in queryset.model._meta.virtual_fields:
-        if relation.name == related_name:
-            rel = relation
-            break
-    if not rel:
+        if relation.name in related_name:
+            rels.append(relation)
+    if not rels:
         raise RelationNotFound("GenericForeignKey '%s' not found in model %s" %
                                (related_name, queryset.model.__name__))
-
     # find out which contenttype each queryset element is related to
-    ct_id_field = queryset.model._meta.get_field(rel.ct_field)
     generics = {}
-    for item in queryset:
-        ct_id = getattr(item, ct_id_field.get_attname())
-        fk_id = getattr(item, rel.fk_field)
-        generics.setdefault(ct_id, set()).add(fk_id)
-
+    for r in rels:
+        ct_id_field = queryset.model._meta.get_field(r.ct_field)
+        for item in queryset:
+            ct_id = getattr(item, ct_id_field.get_attname())
+            fk_id = getattr(item, r.fk_field)
+            generics.setdefault(ct_id, set()).add(fk_id)
     # in_bulk gives us a nice dictionary keyed by id
     content_types = ContentType.objects.in_bulk(generics.keys())
 
@@ -92,11 +95,13 @@ def get_generic_relations(queryset, related_name='content_object'):
     for ct, fk_list in generics.items():
         ct_model = content_types[ct].model_class()
         relations[ct] = ct_model.objects.in_bulk(list(fk_list))
-
+    
     for item in queryset:
-        ct_id = getattr(item, ct_id_field.get_attname())
-        fk_id = getattr(item, rel.fk_field)
-        setattr(item, rel.cache_attr, relations[ct_id][fk_id])
+        for r in rels:
+            ct_id_field = queryset.model._meta.get_field(r.ct_field)
+            ct_id = getattr(item, ct_id_field.get_attname())
+            fk_id = getattr(item, r.fk_field)
+            setattr(item, r.cache_attr, relations[ct_id][fk_id])
 
     return queryset
 

@@ -225,8 +225,7 @@ class TimelineManager(models.Manager):
 
         q = self.get_query_set().filter(Q(actor_c_type=actor_ct, actor_id = actor.id) | Q(timelinefollowers__follower_c_type = actor_ct,
                                        timelinefollowers__follower_id = actor.id)).select_related(depth=3)
-        return q
-        #return get_generic_relations(queryset, 'instance')
+        return get_generic_relations(q, ['actor', 'objetive', 'result'])
         
 
 class Timeline(models.Model):
