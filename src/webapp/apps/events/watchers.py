@@ -1,7 +1,7 @@
 #coding=utf-8
 
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.contrib.contenttypes.models import ContentType
 
 
@@ -24,33 +24,28 @@ def new_suggestion(sender, instance, created, **kwargs):
                                       msg_id = 300,
                                       instance = instance,
                                       visible = True if instance._is_public() else False)
-        UserProfile.objects.set_suggested(instance.user, value=1)
         DEBUG('TIMELINE: creada nueva sugerencia %s' % instance)
         
         
-@receiver(suggestion_deleted)
-def deleted_suggestion(sender, **kwargs):
-    UserProfile.objects.set_suggested(sender.user, value=-1)
+@receiver(pre_delete, sender=Suggestion)
+def deleted_suggestion(sender, instance, **kwargs):
+    UserProfile.objects.set_suggested(instance.user, value=-1)
         
         
-@receiver(suggestion_following_added)
-def added_suggestion_following(sender, follower, **kwargs):
-    t = Timeline.objects.add_timeline(user = follower,
+@receiver(post_save, sender=EventFollower)
+def added_suggestion_following(sender, instance, **kwargs):
+    t = Timeline.objects.add_timeline(user = instance.user,
                                   msg_id = 303,
-                                  instance = sender,
+                                  objetive = instance,
                                   visible = True if sender._is_public() else False)
-    UserProfile.objects.set_supported(follower)
-    Suggestion.objects.set_followers(sender)
+    UserProfile.objects.set_supported(instance.user)
+    instance.__class__.objects.set_followers(instance.event)
     TimelineNotification.objects.add_notification(timeline=t)
-    DEBUG('TIMELINE: usuario %s sigue sugerencia %s' % (follower, sender))
+    DEBUG('TIMELINE: usuario %s sigue evento %s' % (instance.user, instance))
     
     
-@receiver(suggestion_following_deleted)
-def deleted_suggestion_following(sender, follower, **kwargs):
-    suggestion_type = ContentType.objects.get_for_model(sender)
-    EventFollower.objects.filter(user = follower, 
-                                 event_c_type = suggestion_type,
-                                 event_id = sender.id).delete()
-    UserProfile.objects.set_supported(follower, value=-1)
-    Suggestion.objects.set_followers(sender, value=-1)
-    DEBUG('TIMELINE: usuario %s deja de seguir sugerencia %s' % (follower, sender))
+@receiver(pre_delete, sender=EventFollower)
+def deleted_suggestion_following(sender, instance, **kwargs):
+    UserProfile.objects.set_supported(instance.user, value=-1)
+    instance.__class__.objects.set_followers(instance.event, value=-1)
+    DEBUG('TIMELINE: usuario %s deja de seguir evento %s' % (instance.user, instance))

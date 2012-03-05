@@ -93,7 +93,7 @@ def api_city_current(request, lat, lon):
 
 @jsonrpc_method('backpack()', validate=True, authenticated=True)
 def api_user_backpack(request):
-    backpack = Suggestion.objects.get_suggestions_by_follower(follower=request.user)
+    backpack = Suggestion.objects.get_backpack(follower=request.user)
     json_serializer = serializers.get_serializer("json")()
     data = json_serializer.serialize(backpack, ensure_ascii=False)
     return data

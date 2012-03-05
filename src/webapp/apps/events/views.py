@@ -28,7 +28,7 @@ def suggestions_user(request, username):
         follower = user
     else:
         follower = request.user
-    suggestions = Suggestion.objects.get_suggestions_by_follower(follower=follower)
+    suggestions = Suggestion.objects.get_backpack(follower=follower)
     listsuggestions = ListSuggestion.objects.get_lists_by_follower(follower=follower)
     return render_to_response('events/suggestions_user.html',
                               {'suggestions_q': suggestions,

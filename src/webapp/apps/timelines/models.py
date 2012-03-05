@@ -465,7 +465,7 @@ for model in GenericModels:
     model = get_model(*model.split('.'))
     opts = model._meta
     for field in ('actor', 'objetive', 'result'):
-        generic.GenericRelation(Timeline, content_type_field="%s_content_type" % field,
+        generic.GenericRelation(Timeline, content_type_field="%s_c_type" % field,
                                 object_id_field='%s_id' % field,
                                 related_name='timeline_with_%s_as_%s' % ( opts.module_name,
                                                                           field)

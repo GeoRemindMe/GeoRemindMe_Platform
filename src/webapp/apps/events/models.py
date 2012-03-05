@@ -56,31 +56,21 @@ class SuggestionManager(models.GeoManager):
         INFO("SUGERENCIA: creada nueva sugerencia %s %s" % (obj.id, obj.name))
         return obj
         
-    def get_suggestions_by_follower(self, follower):
-        ids = EventFollower.objects.filter(user=follower.id).values_list('event_id', flat=True)
-        return Suggestion.objects.filter(id__in=ids).select_related('user',
-                                                                    'place__city__region__country')
-    
+    def get_backpack(self, follower):
+        return Suggestion.objects.filter(followers__user=follower).select_related('user',
+                                                                    'place__city')
     def toggle_follower(self, follower, suggestion):
         suggestion_type = ContentType.objects.get_for_model(suggestion)
         q = EventFollower.objects.filter(user = follower, 
                                          event_c_type = suggestion_type,
                                          event_id = suggestion.id)
         if q.exists():
-            try:
-                q.delete()
-                suggestion_following_deleted.send(sender=suggestion, follower=follower)
-                return False
-            except:
-                pass
-            
+            q.delete()
+            return False
         else:
-            try:
-                EventFollower.objects.create(event=suggestion, user=follower)
-                suggestion_following_added.send(sender=suggestion, followee=follower)
-                return True
-            except:
-                pass
+            EventFollower.objects.create(event=suggestion, user=follower)
+            suggestion_following_added.send(sender=suggestion, followee=follower)
+            return True
         return None
     
     def set_followers(self, suggestion, value=1):
@@ -108,6 +98,9 @@ class Suggestion(Event, Visibility):
                                             default=0,
                                             blank=True
                                             )
+    followers = generic.GenericRelation('events.EventFollower',
+                                        content_type_field='event_c_type',
+                                        object_id_field='event_id')
     
     objects = SuggestionManager()
     
