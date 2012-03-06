@@ -1,5 +1,12 @@
 #coding=utf-8
 
+"""
+.. module:: views
+:platform: GeoRemindMe!
+:synopsis: API functions
+"""
+
+
 from django.contrib.auth import authenticate, login
 from django.core import serializers
 
@@ -15,6 +22,17 @@ from libs.mapsServices.places import GPRequest, GPAPIError
 
 @jsonrpc_method('login(username=String, password=String) -> String', validate=True)
 def api_login(request, username, password):
+    """
+        Logs a user in the system
+        
+        :param username: Username or email
+        :type username: string
+        :param password: User's password
+        :type password: string
+        
+        :return: session id
+        :raises: InvalidCredentialsError or OtherError
+    """
     user = authenticate(identification=username, password=password)
     if user is not None:
         if user.is_active:
@@ -27,6 +45,19 @@ def api_login(request, username, password):
 
 @jsonrpc_method('register(username=String, email=String, password=String) -> String', validate=True)
 def api_register(request, username, email, password):
+    """
+        Register a new user in the system
+        
+        :param username: Usernamel
+        :type username: string
+        :param email: Email
+        :type email: string
+        :param password: User's password
+        :type password: string
+        
+        :return: session id if registration success
+        :raises: InvalidCredentialsError or OtherError
+    """
     from userena import signals as userena_signals
     form = RegisterForm({'username': username,
                          'email': email,
@@ -47,6 +78,19 @@ def api_register(request, username, email, password):
 
 @jsonrpc_method('places_near(lat=Number, lon=Number, accuracy=Number) -> Object', validate=True)
 def api_places_near(request, lat, lon, accuracy=100):
+    """
+        Return the places near to the location
+        
+        :param lat: Latitude
+        :type username: float
+        :param lon: Longitude 
+        :type password: float
+        :param accuracy: max distance requested (in meters)
+        :type accuracy: integer
+        
+        
+        :return: list of places {'id' : { 'name', 'address', 'location': {'lat', 'lon'}, 'types', 'google_places_reference', 'icon'}
+    """
     gp = GPRequest()
     places = gp.do_search(lat, lon, radius=accuracy)
     if places['status'] == 'OK':
@@ -66,19 +110,41 @@ def api_places_near(request, lat, lon, accuracy=100):
                                                       'icon': place['icon'],
                                                       })
         #p = Place.objects.filter(google_places_id__in=places_to_return.keys()).values_list('google_places_id', 'pk')
-        return places_to_return if places_to_return else None
-    return []
+        return places_to_return if places_to_return else {}
+    return {}
 
 
 @jsonrpc_method('suggestions_near(lat=Number, lon=Number, accuracy=Number) -> Object', validate=False)
 def api_suggestions_near(request, lat, lon, accuracy=100):
+    """
+        Return the suggestions near to the location
+        
+        :param lat: Latitude
+        :type username: float
+        :param lon: Longitude 
+        :type password: float
+        :param accuracy: max distance requested (in meters)
+        :type accuracy: integer
+        
+        
+        :return: list
+    """
     suggestions = Suggestion.objects.nearest_to(lat=lat, lon=lon, accuracy=accuracy)
     json_serializer = serializers.get_serializer("json")()
     data = json_serializer.serialize(suggestions, ensure_ascii=False)
     return data
 
+
 @jsonrpc_method('suggestion_detail(pk=Number) -> Object', validate=False)
 def api_suggestion_detail(request, pk):
+    """
+        Return a suggestion
+        
+        :param pk: Primary Key
+        :type pk: intege
+        
+        :return: Suggestion
+    """
     suggestion = Suggestion.objects.filter(pk=pk, _vis='public')
     json_serializer = serializers.get_serializer("json")()
     data = json_serializer.serialize(suggestion, ensure_ascii=False)

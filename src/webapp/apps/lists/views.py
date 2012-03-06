@@ -12,11 +12,11 @@ from profiles.models import User
 
 @login_required
 def listsuggestion_edit(request, id):
-    listobj = get_object_or_404(ListSuggestion, 
+    listobj = get_object_or_404(ListSuggestion,
                                        user = request.user,
                                        id = id)
     
-    return render_to_response('lists/listsuggestion_edit.html', 
+    return render_to_response('lists/listsuggestion_edit.html',
                               {'list': listobj},
                               context_instance = RequestContext(request))
 
@@ -32,5 +32,3 @@ def listsuggestion_detail(request, id):
     return render_to_response('lists/listsuggestion_detail.html',
                               {'list': listobj},
                               context_instance = RequestContext(request))
-
-

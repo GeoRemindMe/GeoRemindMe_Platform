@@ -13,14 +13,15 @@ class ListSuggestionForm(forms.ModelForm):
     to_twitter = forms.BooleanField(label=_(u"Compartir en Twitter"), required=False
                                      )
     visibility = forms.CharField(required=False, initial='public')
+    
     class Meta:
         model = ListSuggestion
         exclude = ('user', 'created', 'modified', '_short_url', '_vis')
     
     def save(self, user, ids=[]):
-        if self.instance.id is not None and self.instance.user_id != user.id:
+        if self.instance is not None and self.instance.user_id != user.id:
             raise PermissionDenied
-        if self.instance.id is None: # sugerencia nueva
+        if self.instance is None: # sugerencia nueva
             listsuggestion = ListSuggestion.objects.create_from_ids(
                                  name = self.cleaned_data['name'],
                                  description = self.cleaned_data['description'],

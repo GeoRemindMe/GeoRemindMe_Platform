@@ -7,7 +7,7 @@ from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
 
 from models import Suggestion, EventFollower
-from lists.models import ListSuggestion
+from lists.models import *
 from profiles.models import User
 
 
@@ -29,10 +29,11 @@ def suggestions_user(request, username):
     else:
         follower = request.user
     suggestions = Suggestion.objects.get_backpack(follower=follower)
-    listsuggestions = ListSuggestion.objects.get_lists_by_follower(follower=follower)
+    lists = ListSuggestion.objects.get_by_follower(follower=request.user)
     return render_to_response('events/suggestions_user.html',
                               {'suggestions_q': suggestions,
-                               'lists_q': listsuggestions,},
+                               'lists_q': lists,
+                               },
                               context_instance = RequestContext(request))
 
 

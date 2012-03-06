@@ -12,7 +12,7 @@ from django.contrib.gis.geos import Point
 from timezones.fields import LocalizedDateTimeField
 from places.models import Place
 from timelines.models import Timeline
-from signals import suggestion_new, suggestion_following_deleted, suggestion_following_added, suggestion_deleted
+from signals import suggestion_new
 from webapp.site.models_utils import Visibility
 
 from funcs import INFO
@@ -52,13 +52,14 @@ class SuggestionManager(models.GeoManager):
         if 'to_twitter' in kwargs:
             del kwargs['to_twitter']
         obj = super(self.__class__, self).create(**kwargs)
-        suggestion_new.send(sender=obj, to_facebook=to_facebook, to_twitter=to_twitter)
+        suggestion_new.send(sender=obj.__class__, instance=obj, created = True, to_facebook=to_facebook, to_twitter=to_twitter)
         INFO("SUGERENCIA: creada nueva sugerencia %s %s" % (obj.id, obj.name))
         return obj
         
     def get_backpack(self, follower):
-        return Suggestion.objects.filter(followers__user=follower).select_related('user',
+        return self.get_query_set().filter(followers__user=follower).select_related('user',
                                                                     'place__city')
+
     def toggle_follower(self, follower, suggestion):
         suggestion_type = ContentType.objects.get_for_model(suggestion)
         q = EventFollower.objects.filter(user = follower, 
@@ -117,16 +118,15 @@ class Suggestion(Event, Visibility):
         if self._short_url == '':
             from django.contrib.sites.models import Site
             from libs.vavag import VavagRequest
-            from django.conf import settings        
+            from django.conf import settings
             try:
                 current_site = Site.objects.get_current()
                 client = VavagRequest(settings.VAVAG_PASSWORD['user'], settings.VAVAG_PASSWORD['key'])
-                
                 response = client.set_pack('http://%s%s' % (current_site.domain, self.get_absolute_url()))
                 self._short_url = response['packUrl']
                 self.save()
             except Exception:
-                self._short_url = None
+                self._short_url = ''
                 return 'http://%s%s' % (current_site.domain, self.get_absolute_url())
         return self._short_url
     
@@ -157,7 +157,7 @@ class EventFollower(models.Model):
                              related_name="events_followed")
     event_c_type = models.ForeignKey(ContentType,
                                         verbose_name = _(u"Tipo de evento seguido"),
-                                        related_name = "event_followers")
+                                        related_name = "+")
     event_id = models.PositiveIntegerField(_(u"Identificador del evento seguido"))
     event = generic.GenericForeignKey('event_c_type', 'event_id',) # clave generica para cualquier modelo
     done = models.BooleanField(_(u"Hecho"), default=False)
@@ -165,8 +165,7 @@ class EventFollower(models.Model):
     modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
     
     class Meta:
-        get_latest_by = "created"
-        ordering = ['-created']
+        get_latest_by = "-created"
         unique_together = (("user", "event_c_type", "event_id"),)
         verbose_name = _(u"Seguimiento de evento")
         verbose_name_plural = _(u"Seguimientos de eventos")

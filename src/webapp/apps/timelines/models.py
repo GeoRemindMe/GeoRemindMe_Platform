@@ -1,13 +1,12 @@
 #coding=utf-8
 
 
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import F, Q
-from django.db import transaction
 
 from timezones.fields import LocalizedDateTimeField
 from modules.efficient.utils import get_generic_relations
@@ -186,7 +185,7 @@ class TimelineManager(models.Manager):
             
         """
         c_type = ContentType.objects.get_for_model(objetive)
-        q= self.filter(objetive_id=objetive.id, content_type=c_type, visible=visible)
+        q= self.filter(objetive_id=objetive.id, content_type=c_type, visible=visible).order_by('-modified')
         return get_generic_relations(q, ['actor', 'objetive', 'result'])
     
     def get_by_user(self, user, visible=True, all=False):
@@ -205,7 +204,7 @@ class TimelineManager(models.Manager):
             actor = user
         actor_ct = ContentType.objects.get_for_model(actor)
         
-        q = self.get_query_set().filter(actor_c_type = actor_ct, actor_id = actor.id)
+        q = self.get_query_set().filter(actor_c_type = actor_ct, actor_id = actor.id).order_by('-modified')
         if not all: # todo el timeline, visible y no visible
             q = q.filter(visible=visible)
         return get_generic_relations(q, ['actor', 'objetive', 'result'])
@@ -224,7 +223,7 @@ class TimelineManager(models.Manager):
         actor_ct = ContentType.objects.get_for_model(actor)
 
         q = self.get_query_set().filter(Q(actor_c_type=actor_ct, actor_id = actor.id) | Q(timelinefollowers__follower_c_type = actor_ct,
-                                       timelinefollowers__follower_id = actor.id)).select_related(depth=3)
+                                       timelinefollowers__follower_id = actor.id)).order_by('-modified')
         return get_generic_relations(q, ['actor', 'objetive', 'result'])
         
 

@@ -1,9 +1,10 @@
-#coding=utf-8
+coding=utf-8
 
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 
 from libs.decorators import ajax_request
 from forms import ListSuggestionForm
@@ -34,7 +35,9 @@ def listsuggestion_add(request):
     if form.is_valid():
         listobj = form.save(user=request.user, ids = list_instances, ids_del=list_instances_del)
         if listobj is not None:
-            return HttpResponse(simplejson.dumps(listobj), mimetype="application/json")
+            json_serializer = serializers.get_serializer("json")()
+            data = json_serializer.serialize([listobj], ensure_ascii=False)
+            return HttpResponse(data, mimetype="application/json")
     else:
         return HttpResponseBadRequest(simplejson.dumps(form.errors), mimetype="application/json")
     return HttpResponseBadRequest()
