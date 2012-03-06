@@ -159,6 +159,11 @@ def api_city_current(request, lat, lon):
 
 @jsonrpc_method('backpack()', validate=True, authenticated=True)
 def api_user_backpack(request):
+    """
+        Return the user's backpack. Requires authentication
+        
+        :return: Suggestions
+    """
     backpack = Suggestion.objects.get_backpack(follower=request.user)
     json_serializer = serializers.get_serializer("json")()
     data = json_serializer.serialize(backpack, ensure_ascii=False)

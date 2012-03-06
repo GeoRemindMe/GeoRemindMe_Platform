@@ -125,8 +125,6 @@ class Place(models.Model):
     objects = PlaceManager()
     
     class Meta:
-        ordering = ['name']
-        order_with_respect_to = 'city'
         verbose_name = _(u'Sitio')
         verbose_name_plural = _(u'Sitios')
         
