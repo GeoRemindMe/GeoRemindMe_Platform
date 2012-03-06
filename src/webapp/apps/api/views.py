@@ -154,7 +154,9 @@ def api_suggestion_detail(request, pk):
 @jsonrpc_method('city_current(lat=Number, lon=Number) -> Object', validate=True)
 def api_city_current(request, lat, lon):
     city = City.objects.current(lat=lat, lon=lon)
-    return city if city else None
+    json_serializer = serializers.get_serializer("json")()
+    data = json_serializer.serialize(city, ensure_ascii=False)
+    return data
 
 
 @jsonrpc_method('backpack()', validate=True, authenticated=True)

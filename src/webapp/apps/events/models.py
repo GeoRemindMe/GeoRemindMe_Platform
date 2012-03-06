@@ -70,7 +70,6 @@ class SuggestionManager(models.GeoManager):
             return False
         else:
             EventFollower.objects.create(event=suggestion, user=follower)
-            suggestion_following_added.send(sender=suggestion, followee=follower)
             return True
         return None
     
