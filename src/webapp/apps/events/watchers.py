@@ -1,7 +1,7 @@
 #coding=utf-8
 
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, pre_save
 from django.db import transaction
 from django.contrib.contenttypes.models import ContentType
 
@@ -57,3 +57,9 @@ def deleted_suggestion_following(sender, instance, **kwargs):
     UserProfile.objects.set_supported(instance.user, value=-1)
     instance.event.__class__.objects.set_followers(instance.event, value=-1)
     DEBUG('TIMELINE: usuario %s deja de seguir evento %s' % (instance.user, instance))
+    
+    
+@receiver(pre_save, sender=Suggestion)
+def suggestion_modified(sender, instance, raw, **kwargs):
+    if not raw and instance.place is not None:
+        instance.location = instance.place.location

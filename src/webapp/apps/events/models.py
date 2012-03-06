@@ -30,6 +30,7 @@ class Event(models.Model):
     created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
     modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
     place = models.ForeignKey(Place, verbose_name=_(u"Sitio"))
+    location = models.PointField(_(u"Localización (no tocar"), blank=True, null=True)
     date_starts = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True, null=True)
     date_ends = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True, null=True)
     done = models.BooleanField(_(u"Finalizado"), default=False)
@@ -88,7 +89,7 @@ class SuggestionManager(models.GeoManager):
         return self.nearest_to_point(p, accuracy = accuracy)
     
     def nearest_to_point(self, point, accuracy=100):
-        return self.filter(place__location__distance_lte=(point, D(m=accuracy)))
+        return self.get_query_set().filter(location__distance_lte=(point, D(m=accuracy))).distance(point).order_by('distance')
 
 
 class Suggestion(Event, Visibility):
