@@ -1,5 +1,3 @@
-#coding=utf-8
-
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
@@ -118,8 +116,8 @@ def get_context_object(model, fields, language, default_lang, object):
     object_item['fields'] = object_fields = []
     for field in fields.values():
         key = model.objects.filter(pk=object.pk).values(field.name)[0][field.name]
-        original = KeyValue.objects.get_keyvalue(key, default_lang)
-        translation = KeyValue.objects.get_keyvalue(key, language)
+        original = KeyValue.objects.get_keyvalue(key, default_lang, object, field.name)
+        translation = KeyValue.objects.get_keyvalue(key, language, object, field.name)
         object_fields.append({
             'name': field.name,
             'verbose_name': unicode(field.verbose_name),

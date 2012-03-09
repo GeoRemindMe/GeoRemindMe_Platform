@@ -1,5 +1,3 @@
-#coding=utf-8
-
 from django.utils.cache import patch_vary_headers
 from django.utils import translation
 

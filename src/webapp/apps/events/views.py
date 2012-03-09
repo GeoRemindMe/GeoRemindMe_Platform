@@ -19,7 +19,7 @@ def suggestions_user(request, username):
     if username != request.user.username:
         try:
             user = User.objects.select_related('profile').get(
-                                                      username__iexact=username
+                                                      username=username.lower()
                                                       )
         except User.DoesNotExist:
             raise Http404
@@ -58,7 +58,8 @@ def suggestion_detail(request, slug):
     try:
         suggestion = Suggestion.objects.select_related('user', 
                                                        'place__city__region__country',
-                                                       ).get(slug__iexact=slug, _vis='public')
+                                                       ).has_voted(request.user
+                                                                   ).get(slug=slug.lower(), _vis='public')
     except Suggestion.DoesNotExist:
         raise Http404
     if not suggestion._is_public() and suggestion.user_id != request.user.id:

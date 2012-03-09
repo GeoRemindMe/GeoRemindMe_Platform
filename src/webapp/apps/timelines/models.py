@@ -10,6 +10,8 @@ from django.db.models import F, Q
 
 from timezones.fields import LocalizedDateTimeField
 from modules.efficient.utils import get_generic_relations
+from voty.votablemanager import VotableManager
+from voty.models import Vote
 
 
 from south.modelsinspector import add_introspection_rules
@@ -141,7 +143,7 @@ class Follower(models.Model):
 
 
 #------------------------------------------------------------------------------ 
-class TimelineManager(models.Manager):
+class TimelineManager(VotableManager):
     def add_timeline(self, actor, msg_id, objetive, visible, result=None, **kwargs):
         if result is not None:
             timeline = self.create(
@@ -222,9 +224,23 @@ class TimelineManager(models.Manager):
             actor = user
         actor_ct = ContentType.objects.get_for_model(actor)
 
-        q = self.get_query_set().filter(Q(actor_c_type=actor_ct, actor_id = actor.id) | Q(timelinefollowers__follower_c_type = actor_ct,
+        q = self.has_voted(user).filter(Q(actor_c_type=actor_ct, actor_id = actor.id) | Q(timelinefollowers__follower_c_type = actor_ct,
                                        timelinefollowers__follower_id = actor.id)).order_by('-modified')
         return get_generic_relations(q, ['actor', 'objetive', 'result'])
+    
+    def has_voted(self, user):
+        if not user.is_authenticated():
+            return self.get_query_set()
+        table = Vote._meta.db_table
+        table2 = self.model._meta.db_table
+        select = 'SELECT True FROM %s' % table
+        where1 = 'WHERE ' + table + '.user_id = %s' 
+        where2 = 'AND ' + table + '.target_id = ' + table2 + '.objetive_id'
+        where3 = 'AND ' + table + '.target_c_type_id = ' + table2 + '.objetive_c_type_id'
+        return self.get_query_set().extra(
+                                          select={'has_voted':" ".join((select, where1, where2, where3))},
+                                          select_params=[user.id]
+                                          )
         
 
 class Timeline(models.Model):

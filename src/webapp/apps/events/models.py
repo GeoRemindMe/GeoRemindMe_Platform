@@ -15,6 +15,7 @@ from places.models import Place
 from timelines.models import Timeline
 from signals import suggestion_new
 from webapp.site.models_utils import Visibility
+from modules.voty.votablemanager import VotableManager
 
 from funcs import INFO
 from fields import AutoSlugField, PositiveCounterField
@@ -45,7 +46,7 @@ class Event(models.Model):
 
 
 #------------------------------------------------------------------------------ 
-class SuggestionManager(models.GeoManager):
+class SuggestionManager(models.GeoManager, VotableManager):
     def create(self, **kwargs):
         to_facebook = kwargs.get('to_facebook', False)
         to_twitter = kwargs.get('to_twitter', False)
@@ -76,14 +77,14 @@ class SuggestionManager(models.GeoManager):
         return None
     
     def set_followers(self, suggestion, value=1):
-        return self._set_counter(suggestion=suggestion, counter='counter_followers', value=value)
+        return self.get_query_set()._set_counter(suggestion=suggestion, counter='counter_followers', value=value)
     
     def _set_counter(self, suggestion, counter, value=1):
-        return self.filter(
-                            pk = suggestion.pk
-                           ).update(
-                                    **{counter: models.F(counter) + value}
-                                    )
+        return self.get_query_set().filter(
+                                           pk = suggestion.pk
+                                           ).update(
+                                                    **{counter: models.F(counter) + value}
+                                                    )
                            
     def nearest_to(self, lat, lon, accuracy=100):
         p = Point(float(lon), float(lat))
@@ -92,7 +93,9 @@ class SuggestionManager(models.GeoManager):
     def nearest_to_point(self, point, accuracy=100):
         return self.get_query_set().filter(location__distance_lte=(point, D(m=accuracy))
                                            ).select_related('user', 'place__city').distance(point).order_by('distance')
+                                           
 
+        
 
 class Suggestion(Event, Visibility):
     slug = AutoSlugField(populate_from=['name', 'place'], max_length = 50, unique=True)
@@ -209,4 +212,4 @@ class SuggestionTranslation(object):
     fields = ('name', 'description')
 
 
-register(Suggestion, SuggestionTranslation)
+#register(Suggestion, SuggestionTranslation)

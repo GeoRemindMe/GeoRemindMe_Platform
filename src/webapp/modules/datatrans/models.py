@@ -1,11 +1,10 @@
-# coding=utf-8
-
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
 from django.db.models import signals
 from django.db.models.query import QuerySet
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 
 from hashlib import sha1
 
@@ -17,7 +16,9 @@ def make_digest(key):
 
 def _get_cache_keys(self):
     'Get all the cache keys for the given object'
-    return ('datatrans_%s_%s' % (self.language, self.digest),
+    kv_id_fields = ('language', 'digest', 'content_type_id', 'object_id', 'field')
+    values = tuple(getattr(self, attr) for attr in kv_id_fields)
+    return ('datatrans_%s_%s_%s_%s_%s' % values,
             'datatrans_%s' % self.id)
 
 # cache for an hour
@@ -28,15 +29,22 @@ class KeyValueManager(models.Manager):
     def get_query_set(self):
         return KeyValueQuerySet(self.model)
 
-    def get_keyvalue(self, key, language):
+    def get_keyvalue(self, key, language, obj, field):
         digest = make_digest(key)
+        type_id = ContentType.objects.get_for_model(obj.__class__).id
+        object_id = obj.id
+
         keyvalue, created = self.get_or_create(digest=digest,
                                                language=language,
-                                               defaults={'value': key})
+                                               content_type_id=type_id,
+                                               object_id=obj.id,
+                                               field=field,
+                                               defaults={ 'value': key })
+
         return keyvalue
 
-    def lookup(self, key, language):
-        kv = self.get_keyvalue(key, language)
+    def lookup(self, key, language, obj, field):
+        kv = self.get_keyvalue(key, language, obj, field)
         if kv.edited:
             return kv.value
         else:
@@ -49,17 +57,9 @@ class KeyValueManager(models.Manager):
         If modelfield is specified, only KeyValue entries for that field will
         be returned.
         '''
-        objects = model.objects.all()
-        digests = []
-
-        for object in objects:
-            if modelfield is None:
-                for field in fields:
-                    digests.append(make_digest(object.__dict__[field.name]))
-            else:
-                digests.append(make_digest(object.__dict__[modelfield]))
-
-        return self.filter(digest__in=digests)
+        field_names = [f.name for f in fields] if modelfield is None else [modelfield]
+        ct = ContentType.objects.get_for_model(model)
+        return self.filter(field__in=field_names, content_type__id=ct.id)
 
     def contribute_to_class(self, model, name):
         signals.post_save.connect(self._post_save, sender=model)
@@ -111,6 +111,8 @@ class KeyValueQuerySet(QuerySet):
             # been filtered/cloned.
             return super(KeyValueQuerySet, self).get(*args, **kwargs)
 
+        kv_id_fields = ('language', 'digest', 'content_type', 'object_id', 'field')
+
         # Punt on anything more complicated than get by pk/id only...
         if len(kwargs) == 1:
             k = kwargs.keys()[0]
@@ -118,9 +120,10 @@ class KeyValueQuerySet(QuerySet):
                 obj = cache.get('datatrans_%s' % kwargs.values()[0])
                 if obj is not None:
                     return obj
-        elif 'digest' in kwargs and 'language' in kwargs:
-            obj = cache.get('datatrans_%s_%s' % (kwargs['language'],
-                                                 kwargs['digest']))
+        elif set(kv_id_fields) <= set(kwargs.keys()):
+            values = tuple(kwargs[attr] for attr in kv_id_fields)
+            obj = cache.get('datatrans_%s_%s_%s_%s_%s' % values)
+
             if obj is not None:
                 return obj
 
@@ -129,14 +132,25 @@ class KeyValueQuerySet(QuerySet):
 
 
 class KeyValue(models.Model):
-    digest = models.CharField(max_length=40, db_index=True)
-    language = models.CharField(max_length=5, db_index=True,
-                                choices=settings.LANGUAGES)
+    content_type = models.ForeignKey(ContentType, null=True)
+    object_id = models.PositiveIntegerField(null=True)
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    field = models.TextField()
+    language = models.CharField(max_length=5, db_index=True, choices=settings.LANGUAGES)
+
     value = models.TextField(blank=True)
     edited = models.BooleanField(blank=True, default=False)
     fuzzy = models.BooleanField(blank=True, default=False)
 
+    digest = models.CharField(max_length=40, db_index=True)
+
     objects = KeyValueManager()
+
+    # South can't hack this index, it mangles the order and cannot handle
+    # foreign key and textfields. Just add it by hand.
+    #
+    # class Meta:
+    #     unique_together = ('language', 'content_type', 'field', 'object_id', 'digest')
 
     def __unicode__(self):
         return u'%s: %s' % (self.language, self.value)
