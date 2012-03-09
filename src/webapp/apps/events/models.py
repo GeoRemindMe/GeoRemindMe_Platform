@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.gis.measure import D
 from django.db.models import F
 from django.contrib.gis.geos import Point
+from django.core import serializers
 
 from timezones.fields import LocalizedDateTimeField
 from places.models import Place
@@ -30,7 +31,7 @@ class Event(models.Model):
     created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
     modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
     place = models.ForeignKey(Place, verbose_name=_(u"Sitio"))
-    location = models.PointField(_(u"Localización (no tocar"), blank=True, null=True)
+    location = models.PointField(_(u"Localización (no tocar)"), blank=True, null=True)
     date_starts = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True, null=True)
     date_ends = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True, null=True)
     done = models.BooleanField(_(u"Finalizado"), default=False)
@@ -89,7 +90,8 @@ class SuggestionManager(models.GeoManager):
         return self.nearest_to_point(p, accuracy = accuracy)
     
     def nearest_to_point(self, point, accuracy=100):
-        return self.get_query_set().filter(location__distance_lte=(point, D(m=accuracy))).distance(point).order_by('distance')
+        return self.get_query_set().filter(location__distance_lte=(point, D(m=accuracy))
+                                           ).select_related('user', 'place__city').distance(point).order_by('distance')
 
 
 class Suggestion(Event, Visibility):
@@ -145,11 +147,27 @@ class Suggestion(Event, Visibility):
                                 object_id = self.id)
         for t in timeline:
             t.delete()
-        suggestion_deleted.send(sender=self)
         self.user_id = settings.GEOREMINDME_USER_ID
         self.save()
         
-        
+    @classmethod
+    def serialize_to_json(cls, q, **kwargs):
+        if not 'fields' in kwargs:
+            kwargs['fields']=['description', 'name', 'place', 'user','distance']
+        else:
+            if kwargs['fields'] == ['allfields']:
+                del kwargs['fields']
+        json_serializer = serializers.get_serializer("json")()
+        data = json_serializer.serialize(q, 
+                                     ensure_ascii=kwargs.pop("ensure_ascii", False), 
+                                     use_natural_keys=kwargs.pop("use_natural_keys", True),
+                                     **kwargs)
+        return data
+    
+    def natural_key(self):
+        return [self.pk, self.name, self.place]
+    natural_key.dependencies = ['places.Place']
+                                     
 
 #------------------------------------------------------------------------------ 
 class EventFollower(models.Model):

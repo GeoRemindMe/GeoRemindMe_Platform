@@ -131,6 +131,10 @@ class Place(models.Model):
     def __unicode__(self):
         return u"%s, %s" % (self.name, self.city)
     
+    def natural_key(self):
+        return [self.pk, self.name, self.address, self.city.name, (self.location.y, self.location.x), self.google_places_id]
+    natural_key.dependencies = ['cities.City']
+    
     @models.permalink
     def get_absolute_url(self):
         return ('places_place_detail', (), { 'slug': self.slug })

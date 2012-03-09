@@ -28,7 +28,7 @@ class SuggestionForm(forms.ModelForm):
         if self.instance.id is None and place is None:
             raise KeyError("place needed")
         if self.instance.id is not None and self.instance.user_id != user.id:
-            raise PermissionDenied
+            raise PermissionDenied()
         if self.instance.id is None: # sugerencia nueva
             suggestion = Suggestion.objects.create(
                                  name = self.cleaned_data['name'],

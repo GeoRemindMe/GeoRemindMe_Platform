@@ -20,6 +20,13 @@ from models import UserProfile
 @login_required
 @page_template("profiles/dashboard_index_page.html")
 def dashboard(request, extra_context=None):
+    from django.core import serializers
+    from events.models import Suggestion
+    suggestions = Suggestion.objects.nearest_to(lat=37, lon=-3, accuracy=100000)
+    from modules.jsonrpc.serializers.json import JSONSerializer
+    json_serializer = JSONSerializer()
+    data = json_serializer.serialize(suggestions, ensure_ascii=False, use_natural_keys=True)
+    raise Exception(data)
 #    try:
 #        request.user.get_profile()
 #    except:

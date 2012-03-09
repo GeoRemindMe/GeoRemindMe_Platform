@@ -15,7 +15,7 @@ class SuggestionAdmin(admin.ModelAdmin):
     inlines = (EventFollowerInline,)
     model = Suggestion
     fields = ['_vis', 'name', 'description', 'user', 'place', 'done', 'date_starts', 'date_ends', '_short_url', 'counter_followers', 'location']
-    readonly_fields  = ['created', 'modified', 'slug']
+    readonly_fields  = ['created', 'modified', 'slug', 'location']
     
     
 admin.site.register(Suggestion, SuggestionAdmin)

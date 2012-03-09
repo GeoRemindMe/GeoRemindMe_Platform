@@ -1,7 +1,6 @@
 try:
   import cjson as json
 except (ImportError, NameError):
-  raise
   try:
     from django.utils import simplejson as json
   except (ImportError, NameError):
@@ -20,3 +19,5 @@ except AttributeError:
 
 loads = json.loads
 dumps = json.dumps
+
+
