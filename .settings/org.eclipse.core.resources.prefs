@@ -1,0 +1,9 @@
+eclipse.preferences.version=1
+encoding//src/webapp/apps/events/models.py=utf-8
+encoding//src/webapp/apps/events/views.py=utf-8
+encoding//src/webapp/apps/profiles/views.py=utf-8
+encoding//src/webapp/apps/timelines/models.py=utf-8
+encoding//src/webapp/modules/voty/admin.py=utf-8
+encoding//src/webapp/modules/voty/managers.py=utf-8
+encoding//src/webapp/modules/voty/models.py=utf-8
+encoding//src/webapp/modules/voty/votablemanager.py=utf-8
