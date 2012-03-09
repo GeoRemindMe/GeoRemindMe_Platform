@@ -1,0 +1,9 @@
+\indexentry{apps.api.views (module)|hyperpage}{7}
+\indexentry{webapp.apps.api.views (module)|hyperpage}{7}
+\indexentry{api\_city\_current() (in module apps.api.views)|hyperpage}{7}
+\indexentry{api\_login() (in module apps.api.views)|hyperpage}{7}
+\indexentry{api\_places\_near() (in module apps.api.views)|hyperpage}{7}
+\indexentry{api\_register() (in module apps.api.views)|hyperpage}{8}
+\indexentry{api\_suggestion\_detail() (in module apps.api.views)|hyperpage}{8}
+\indexentry{api\_suggestions\_near() (in module apps.api.views)|hyperpage}{8}
+\indexentry{api\_user\_backpack() (in module apps.api.views)|hyperpage}{8}
