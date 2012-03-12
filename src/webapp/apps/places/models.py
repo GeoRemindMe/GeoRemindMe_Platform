@@ -6,12 +6,13 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.gis.measure import D
 
-from timezones.fields import LocalizedDateTimeField
+from modules.taggit.managers import TaggableManager
+from modules.timezones.fields import LocalizedDateTimeField
 from fields import AutoSlugField
-from cities.models import Country, Region, City
+from modules.cities.models import Country, Region, City
 
 from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
+add_introspection_rules([], ["^modules.timezones.fields.LocalizedDateTimeField", "^modules.taggit.managers.TaggableManager"])
 
 
 class PlaceManager(models.GeoManager):
@@ -95,6 +96,8 @@ class PlaceManager(models.GeoManager):
                             google_places_id=search['result']['id'],
                             user = kwargs['user']
                              )
+            place.tags.add(*search['result']['types'])
+
         return place
 
 
@@ -123,6 +126,7 @@ class Place(models.Model):
     modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
     
     objects = PlaceManager()
+    tags = TaggableManager()
     
     class Meta:
         verbose_name = _(u'Sitio')

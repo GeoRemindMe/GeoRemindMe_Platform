@@ -18,6 +18,7 @@ class TagBase(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
+        self.name = self.name.lower()
         if not self.pk and not self.slug:
             self.slug = self.slugify(self.name)
             if django.VERSION >= (1, 2):
