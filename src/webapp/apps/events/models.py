@@ -210,6 +210,8 @@ class EventFollower(models.Model):
 from datatrans.utils import register
 class SuggestionTranslation(object):
     fields = ('name', 'description')
+    
+
 
 
 #register(Suggestion, SuggestionTranslation)

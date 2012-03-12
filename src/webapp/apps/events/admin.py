@@ -2,6 +2,9 @@
 
 from django.contrib import admin
 from django.contrib.contenttypes import generic
+
+from reversion.admin import VersionAdmin
+
 from models import Suggestion, EventFollower
 
 
@@ -11,7 +14,7 @@ class EventFollowerInline(generic.GenericStackedInline):
     ct_field = "event_c_type"
     ct_fk_field = "event_id"
 
-class SuggestionAdmin(admin.ModelAdmin):
+class SuggestionAdmin(VersionAdmin):
     inlines = (EventFollowerInline,)
     model = Suggestion
     fields = ['_vis', 'name', 'description', 'user', 'place', 'done', 'date_starts', 'date_ends', '_short_url', 'counter_followers', 'location']
