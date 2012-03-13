@@ -13,6 +13,7 @@ class EventFollowerInline(generic.GenericStackedInline):
     extra = 1
     ct_field = "event_c_type"
     ct_fk_field = "event_id"
+    readonly_fields  = ['created', 'modified']
 
 class SuggestionAdmin(VersionAdmin):
     inlines = (EventFollowerInline,)

@@ -10,3 +10,6 @@
 [submodule "src/webapp/modules/efficient"]
 	path = src/webapp/modules/efficient
 	url = git@github.com:jneight/django-efficient.git
+[submodule "src/webapp/modules/voty"]
+	path = src/webapp/modules/voty
+	url = git@github.com:jneight/Voty.git

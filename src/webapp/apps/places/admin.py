@@ -2,7 +2,11 @@
 
 
 from django.contrib.gis import admin
-from models import * #@UnusedWildImport
+from models import Place #@UnusedWildImport
 
 
-admin.site.register(Place, admin.GeoModelAdmin)
+class PlaceAdmin(admin.GeoModelAdmin):
+    model = Place
+    readonly_fields  = ['created', 'modified', 'slug']
+
+admin.site.register(Place, PlaceAdmin)

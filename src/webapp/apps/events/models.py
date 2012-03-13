@@ -10,7 +10,8 @@ from django.db.models import F
 from django.contrib.gis.geos import Point
 from django.core import serializers
 
-from timezones.fields import LocalizedDateTimeField
+from modules.timezones.fields import LocalizedDateTimeField
+from modules.taggit.managers import TaggableManager
 from places.models import Place
 from timelines.models import Timeline
 from signals import suggestion_new
@@ -19,10 +20,6 @@ from modules.voty.votablemanager import VotableManager
 
 from funcs import INFO
 from fields import AutoSlugField, PositiveCounterField
-
-
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField", "^fields.PositiveCounterField"])
 
 
 class Event(models.Model):
@@ -109,6 +106,7 @@ class Suggestion(Event, Visibility):
                                         object_id_field='event_id')
     
     objects = SuggestionManager()
+    tags = TaggableManager()
     
     class Meta:
         verbose_name = _(u"Sugerencia")

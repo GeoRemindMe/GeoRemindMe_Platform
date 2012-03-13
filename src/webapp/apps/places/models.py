@@ -11,9 +11,6 @@ from modules.timezones.fields import LocalizedDateTimeField
 from fields import AutoSlugField
 from modules.cities.models import Country, Region, City
 
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^modules.timezones.fields.LocalizedDateTimeField", "^modules.taggit.managers.TaggableManager"])
-
 
 class PlaceManager(models.GeoManager):
     def nearest_to(self, lat, lon, accuracy=100):

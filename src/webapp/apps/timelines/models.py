@@ -8,14 +8,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import F, Q
 
-from timezones.fields import LocalizedDateTimeField
+from modules.timezones.fields import LocalizedDateTimeField
 from modules.efficient.utils import get_generic_relations
-from voty.votablemanager import VotableManager
-from voty.models import Vote
-
-
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^timezones.fields.LocalizedDateTimeField"])
+from modules.voty.votablemanager import VotableManager
+from modules.voty.models import Vote
 
 
 class NotificationSettings(models.Model):
@@ -120,7 +116,7 @@ class Follower(models.Model):
     
     modified = LocalizedDateTimeField(_(u"Modificado"),
                                       auto_now=True)
-    created = models.DateTimeField(auto_now_add=True)
+    created = LocalizedDateTimeField(auto_now_add=True)
     objects = FollowerManager()
     
     class Meta:
