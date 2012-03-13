@@ -1,7 +1,0 @@
-2012-02-24 10:28:33 [7891] [INFO] Starting gunicorn 0.13.4
-2012-02-24 10:28:33 [7891] [INFO] Listening at: http://192.168.2.102:8000 (7891)
-2012-02-24 10:28:33 [7891] [INFO] Using worker: sync
-2012-02-24 10:28:33 [7902] [INFO] Booting worker with pid: 7902
-2012-02-24 10:28:56 [7902] [INFO] Worker exiting (pid: 7902)
-2012-02-24 10:28:56 [7891] [INFO] Handling signal: int
-2012-02-24 10:28:56 [7891] [INFO] Shutting down: Master
