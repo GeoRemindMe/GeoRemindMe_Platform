@@ -136,7 +136,7 @@ class Place(models.Model):
         return u"%s, %s" % (self.name, self.city)
     
     def natural_key(self):
-        return [self.pk, self.name, self.address, self.city.name, (self.location.y, self.location.x), self.google_places_id]
+        return [self.pk, self.name, self.address, self.city.name, (self.location.y, self.location.x), self.google_places_id, self.google_places_reference]
     natural_key.dependencies = ['cities.City']
     
     @models.permalink
