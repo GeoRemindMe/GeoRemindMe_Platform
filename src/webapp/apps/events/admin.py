@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.contrib.contenttypes import generic
 
-from reversion.admin import VersionAdmin
+from modules.reversion.admin import VersionAdmin
 
 from models import Suggestion, EventFollower
 

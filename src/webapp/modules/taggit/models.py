@@ -1,4 +1,4 @@
-import reversion
+import modules.reversion as reversion
 import django
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.generic import GenericForeignKey

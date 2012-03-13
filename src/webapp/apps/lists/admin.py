@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.contrib.contenttypes import generic
 from models import ListSuggestion, ListFollower, SuggestionInList
 
+from modules.reversion.admin import VersionAdmin
+
 
 class ListFollowerInline(generic.GenericStackedInline):
     model = ListFollower
@@ -18,7 +20,7 @@ class SuggestionInListInline(admin.StackedInline):
     extra = 1
 
 
-class ListSuggestionAdmin(admin.ModelAdmin):
+class ListSuggestionAdmin(VersionAdmin):
     inlines = (ListFollowerInline, SuggestionInListInline)
     model = ListSuggestion
     fields = ['_vis', 'name', 'description', 'user', '_short_url', 'counter_followers']
