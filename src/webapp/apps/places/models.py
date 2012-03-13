@@ -11,9 +11,6 @@ from modules.timezones.fields import LocalizedDateTimeField
 from fields import AutoSlugField
 from modules.cities.models import Country, Region, City
 
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^modules.timezones.fields.LocalizedDateTimeField", "^modules.taggit.managers.TaggableManager"])
-
 
 class PlaceManager(models.GeoManager):
     def nearest_to(self, lat, lon, accuracy=100):
@@ -136,7 +133,7 @@ class Place(models.Model):
         return u"%s, %s" % (self.name, self.city)
     
     def natural_key(self):
-        return [self.pk, self.name, self.address, self.city.name, (self.location.y, self.location.x), self.google_places_id]
+        return [self.pk, self.name, self.address, self.city.name, (self.location.y, self.location.x), self.google_places_id, self.google_places_reference]
     natural_key.dependencies = ['cities.City']
     
     @models.permalink

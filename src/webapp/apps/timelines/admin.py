@@ -14,6 +14,7 @@ class TimelineFollowerInline(generic.GenericStackedInline):
 
 class TimelineAdmin(admin.ModelAdmin):
     inlines = (TimelineFollowerInline,)
+    readonly_fields  = ['created', 'modified']
     model = Timeline
 
 

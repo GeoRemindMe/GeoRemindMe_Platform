@@ -10,6 +10,7 @@ class ListFollowerInline(generic.GenericStackedInline):
     extra = 1
     ct_field = "list_c_type"
     ct_fk_field = "list_id"
+    readonly_fields  = ['created', 'modified']
     
     
 class SuggestionInListInline(admin.StackedInline):
