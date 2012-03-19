@@ -74,7 +74,7 @@ class SuggestionManager(models.GeoManager, VotableManager):
         return None
     
     def set_followers(self, suggestion, value=1):
-        return self.get_query_set()._set_counter(suggestion=suggestion, counter='counter_followers', value=value)
+        return self._set_counter(suggestion=suggestion, counter='counter_followers', value=value)
     
     def _set_counter(self, suggestion, counter, value=1):
         return self.get_query_set().filter(
@@ -106,7 +106,7 @@ class Suggestion(Event, Visibility):
                                         object_id_field='event_id')
     
     objects = SuggestionManager()
-    tags = TaggableManager()
+#    tags = TaggableManager()
     
     class Meta:
         verbose_name = _(u"Sugerencia")

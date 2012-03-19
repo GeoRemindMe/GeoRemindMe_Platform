@@ -160,25 +160,27 @@ def api_suggestion_detail(request, pk):
     return Suggestion.serialize_to_json(suggestion)
 
 
-@jsonrpc_method('suggestion_add(name=String, description=String, place=Object) -> Object', validate=False)
+@jsonrpc_method('suggestion_add(name=String, description=String, place=Object) -> Object', validate=False, authenticated=True)
 def api_suggestion_add(request, name, description, place):
     place_obj = None
     if type(place) == type(0):
-        place = Place.objects.filter(pk=place)
+        place_obj = Place.objects.filter(pk=place)
     if place_obj is None:
-        place = Place.objects.create_from_google(
+        place_obj = Place.objects.create_from_google(
                                  google_places_reference = place,
                                  user = request.user
                                  )
         
-    data = {'name': name,
+    data = {
+            'name': name,
             'description': description,
+            'visibility': 'public',
             }
-    form = SuggestionForm(initial=data)
+    form = SuggestionForm(data)
     if form.is_valid():
-        suggestion = form.save(user=request.user, place=place)
+        suggestion = form.save(user=request.user, place=place_obj)
         return Suggestion.serialize_to_json([suggestion])
-    return OtherError(form._errors)
+    return form.errors
 
 
 @jsonrpc_method('city_current(lat=Number, lon=Number) -> Object', validate=True)

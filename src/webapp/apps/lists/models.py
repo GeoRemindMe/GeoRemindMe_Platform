@@ -34,9 +34,11 @@ class ListGenericManager(models.Model):
 class ListGeneric(models.Model):
     name = models.CharField(_(u"Nombre"), max_length=128)
     description = models.TextField(_(u"Descripcion"))
+    user = models.ForeignKey('auth.User', verbose_name=_(u"Usuario"))
+    
     created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
     modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
-    user = models.ForeignKey('auth.User', verbose_name=_(u"Usuario"))
+    
     
     class Meta:
         abstract = True

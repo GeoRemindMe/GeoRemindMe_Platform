@@ -13,6 +13,7 @@ class SuggestionForm(forms.ModelForm):
     to_twitter = forms.BooleanField(label=_(u"Compartir en Twitter"), required=False
                                      )
     visibility = forms.CharField(required=False, initial='public')
+    
     class Meta:
         model = Suggestion
         exclude = ('user', 'created', 'modified', '_short_url', 'place', '_vis')

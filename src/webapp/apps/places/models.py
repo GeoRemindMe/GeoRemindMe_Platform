@@ -86,11 +86,11 @@ class PlaceManager(models.GeoManager):
             place.save()
         except Place.DoesNotExist:
             place = Place.objects.create(name=search['result']['name'],
-                            location=location,
-                            address=search['result'].get('formatted_address'),
-                            city= city_obj,
-                            google_places_reference=search['result']['reference'],
-                            google_places_id=search['result']['id'],
+                            location = location,
+                            address = search['result'].get('formatted_address'),
+                            city = city_obj,
+                            google_places_reference = search['result']['reference'],
+                            google_places_id = search['result']['id'],
                             user = kwargs['user']
                              )
             place.tags.add(*search['result']['types'])
@@ -104,7 +104,7 @@ class Place(models.Model):
     location = models.PointField(_(u"location"), blank=False)
     city = models.ForeignKey(City, verbose_name=_(u"Ciudad"),
                             related_name="places")
-    address = models.CharField(_(u"Calle"), max_length=512, blank=True, null=True)
+    address = models.CharField(_(u"Calle"), max_length=512, blank=True)
     phone = models.CharField(_(u"Teléfono"), max_length=32, blank=True)
     user = models.ForeignKey(User, verbose_name=_(u"Usuario"),
                             related_name = "places")
