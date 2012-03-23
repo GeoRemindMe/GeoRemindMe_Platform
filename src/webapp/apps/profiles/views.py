@@ -26,7 +26,7 @@ def dashboard(request, extra_context=None):
 #        UserProfile.objects.create(user=request.user)
 #    Timeline.objects.add_timeline(request.user, 0, request.user, visible=True)
     context = {
-               'timelines' : Timeline.objects.get_chronology(user=request.user),
+               'objects' : request.user.get_chronology(),
                }
      
     if extra_context is not None:
@@ -40,7 +40,7 @@ def dashboard(request, extra_context=None):
 @page_template("profiles/notifications_index_page.html")
 def notifications(request, extra_context=None):
     context = {
-               'timelines': TimelineNotification.objects.get_by_user(request.user) 
+               'objects': request.user.get_notifications()
                }
     UserProfile.objects.set_notifications(request.user, value=-10)
 #    UserProfile.objects.filter(
@@ -77,9 +77,9 @@ def profile_detail(request, username, extra_context=None):
     
     context = {
                'profile': user.profile,
-               'timelines' : Timeline.objects.get_by_user(user = username,
+               'objects' : Timeline.objects.get_by_user(user = username,
                                             visible = True),
-               'user': user,
+               'user_profile': user,
                'is_follower': Follower.objects.is_follower(request.user, user),
                'is_following': Follower.objects.is_follower(user, request.user),
                }
@@ -117,9 +117,9 @@ def followers_panel(request, username, extra_context=None):
     if not user.profile.can_view_profile(request.user) or not user.profile.show_followers:
         return HttpResponseForbidden(_("No tienes permiso para ver este perfil"))
     
-    followers = Follower.objects.get_by_followee(user)
+    followers = user.followees.all() # who has the user as followee, so they are followers :=
     context = {
-               'followers': followers,
+               'objects': followers,
                'username': username
                }
     if extra_context is not None:
@@ -141,9 +141,9 @@ def followings_panel(request, username, extra_context=None):
     if not user.profile.can_view_profile(request.user) or not user.profile.show_followings:
         return HttpResponseForbidden(_("No tienes permiso para ver este perfil"))
     
-    followings = Follower.objects.get_by_follower(user)
+    followees = user.followers.all()
     context = {
-               'followings': followings,
+               'objects': followees,
                'username': username
                }
     if extra_context is not None:

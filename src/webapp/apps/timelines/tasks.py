@@ -12,7 +12,7 @@ import models as timelines_models
 @task
 def share_timeline(timeline):
     if timeline.visible:
-        followers = timelines_models.Follower.objects.get_by_followee(followee = timeline.user,
+        followers = timelines_models.Follower.objects.get_by_followee(followee = timeline.actor,
                                                                       type_filter = User
                                                                       )
         timelines = []

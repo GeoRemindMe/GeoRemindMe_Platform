@@ -21,8 +21,9 @@ def new_user_registered(sender, instance, created, **kwargs):
         except:
             UserProfile.objects.create(user=instance)
             
-        Timeline.objects.add_timeline(user = instance,
-                                          msg_id = 0,
-                                          instance = instance,
-                                          visible = False)
+        Timeline.objects.add_timeline(actor=instance, 
+                                      msg_id=0,
+                                      objetive=instance,
+                                      visible=True,
+                                      )
         DEBUG('TIMELINE: creado nuevo usuario %s' % instance)

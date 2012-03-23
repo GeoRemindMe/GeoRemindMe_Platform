@@ -30,6 +30,7 @@ def new_follower(sender,  instance, created, **kwargs):
         t = Timeline.objects.add_timeline(actor=instance.follower, 
                                       msg_id=100,
                                       objetive=instance.followee,
+                                      result = instance,
                                       visible=True)
         UserProfile.objects.set_followers(user=instance.followee) # incrementa el contador del followee
         UserProfile.objects.set_followings(user=instance.follower) # incrementa el contador del follower

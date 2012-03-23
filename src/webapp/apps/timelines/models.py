@@ -158,7 +158,9 @@ class TimelineManager(VotableManager):
                                 visible = visible,
                                 **kwargs
                                 )
-            
+        TimelineFollower(timeline = timeline,
+                         follower = actor
+                         )
         return timeline
         
     def del_all_timelines(self, actor, msg_id, objetive):
@@ -182,8 +184,7 @@ class TimelineManager(VotableManager):
             :returns: Iterator
             
         """
-        c_type = ContentType.objects.get_for_model(objetive)
-        q= self.filter(objetive_id=objetive.id, content_type=c_type, visible=visible).order_by('-modified')
+        q= objetive.objetive_timelines.filter(visible=visible).order_by('-modified')
         return get_generic_relations(q, ['actor', 'objetive', 'result'])
     
     def get_by_user(self, user, visible=True, all=False):
@@ -200,9 +201,8 @@ class TimelineManager(VotableManager):
             actor = User.objects.get(username = user.lower())
         else:
             actor = user
-        actor_ct = ContentType.objects.get_for_model(actor)
         
-        q = self.get_query_set().filter(actor_c_type = actor_ct, actor_id = actor.id).order_by('-modified')
+        q = actor.actor_timelines.get_query_set().order_by('-modified')
         if not all: # todo el timeline, visible y no visible
             q = q.filter(visible=visible)
         return get_generic_relations(q, ['actor', 'objetive', 'result'])
@@ -220,8 +220,8 @@ class TimelineManager(VotableManager):
             actor = user
         actor_ct = ContentType.objects.get_for_model(actor)
 
-        q = self.has_voted(user).filter(Q(actor_c_type=actor_ct, actor_id = actor.id) | Q(timelinefollowers__follower_c_type = actor_ct,
-                                       timelinefollowers__follower_id = actor.id)).order_by('-modified')
+        q = self.has_voted(user).filter(timelinefollowers__follower_c_type = actor_ct,
+                                       timelinefollowers__follower_id = actor.id).order_by('-modified')[:10]
         return get_generic_relations(q, ['actor', 'objetive', 'result'])
     
     def has_voted(self, user):
@@ -420,8 +420,8 @@ class TimelineNotificationManager(models.Manager):
         if user is None:
             user = timeline.instance.user   
         obj = self.create(timeline = timeline,
-                              actor = user
-                              )
+                           actor = user
+                        )
         UserProfile.objects.filter(
                                    user = user
                                    ).update(
@@ -436,10 +436,11 @@ class TimelineNotificationManager(models.Manager):
             actor = user
         actor_ct = ContentType.objects.get_for_model(actor)
 
-        return Timeline.objects.filter(
-                                       timelinenotification__actor_c_type = actor_ct,
-                                       timelinenotification__actor_id = actor.id,
-                                       ).select_related(depth=1)
+        q = Timeline.objects.filter(
+                                       timelinenotifications__actor_c_type = actor_ct,
+                                       timelinenotifications__actor_id = actor.id,
+                                       ).order_by('created')
+        return get_generic_relations(q, ['actor', 'objetive', 'result'])
 
 
 class TimelineNotification(models.Model):
@@ -451,7 +452,7 @@ class TimelineNotification(models.Model):
     actor_c_type = models.ForeignKey(ContentType,
                                         verbose_name = _(u"Tipo de objeto seguidor"),
                                         related_name = "timelinenotifications")
-    actor_id = models.PositiveIntegerField(_(u"Identificador del seguidor"))
+    actor_id = models.IntegerField(_(u"Identificador del seguidor"))
     actor = generic.GenericForeignKey('actor_c_type', 'actor_id',) # clave generica para cualquier modelo
     
     created = LocalizedDateTimeField(auto_now_add=True)
@@ -461,8 +462,8 @@ class TimelineNotification(models.Model):
     objects = TimelineNotificationManager()
     
     class Meta:
+        unique_together = (("timeline", "actor_c_type", "actor_id"),) 
         get_latest_by = "created"
-        ordering = ['-created']
         verbose_name = _(u"Notificacion de Timeline")
         verbose_name_plural = _(u"Notificaciones de Timelines")
         
@@ -478,13 +479,42 @@ try:
         model = get_model(*model.split('.'))
         opts = model._meta
         for field in ('actor', 'objetive', 'result'):
-            generic.GenericRelation(Timeline, content_type_field="%s_c_type" % field,
+            generic.GenericRelation(Timeline, 
+                                    content_type_field="%s_c_type" % field,
                                     object_id_field='%s_id' % field,
-                                    related_name='timelines_with_%s_as_%s' % ( opts.module_name,
-                                                                              field)
-                                    ).contribute_to_class(model, '%s_in_timelines' % field)
-            setattr(Timeline, 'timelines_with_%s_as_%s' % (opts.module_name,
+                                    related_name='timelines_with_%s_%s_as_%s' % ( 
+                                                                                 opts.app_label,
+                                                                                 opts.module_name,
+                                                                                 field)
+                                    ).contribute_to_class(model, '%s_timelines' % field)
+            setattr(Timeline, 'timelines_with_%s_%s_as_%s' % (opts.app_label,
+                                                              opts.module_name,
                                                            field), None)
+            
+        # south fails migrating with this code :)
+    GenericModelsFollowers = ['auth.User']
+    # from django-activity-stream
+    
+    for model in GenericModelsFollowers:
+        model = get_model(*model.split('.'))
+        opts = model._meta
+        for field in ('follower', 'followee',):
+            generic.GenericRelation(Follower, 
+                                    content_type_field="%s_c_type" % field,
+                                    object_id_field='%s_id' % field,
+                                    related_name='users_as_%s' % (
+                                                               field)
+                                    ).contribute_to_class(model, '%ss' % field)
+            setattr(Follower, 'users_as_%s' % (field), None)
+        generic.GenericRelation(TimelineFollower, 
+                                    content_type_field="follower_c_type",
+                                    object_id_field='follwer_id',
+                                    related_name='timelinesfollowers_as_follower'
+                                    ).contribute_to_class(model, 'timelinefollowees')
+        setattr(TimelineFollower, 'timelinefollowers' % (field), None)
+            
+                
+    
 except:
     pass
 from profiles.models import UserProfile
