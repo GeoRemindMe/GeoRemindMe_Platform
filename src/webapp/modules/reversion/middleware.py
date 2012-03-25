@@ -1,6 +1,6 @@
 """Middleware used by Reversion."""
 
-from modules.reversion.revisions import revision_context_manager
+from reversion.revisions import revision_context_manager
 
 
 REVISION_MIDDLEWARE_FLAG = "reversion.revision_middleware_active"

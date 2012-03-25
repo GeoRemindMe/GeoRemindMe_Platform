@@ -14,8 +14,8 @@ from profiles.models import User
 @login_required
 def suggestions_user(request, username):
     """
-    USER'S BACKPACK
-    """
+USER'S BACKPACK
+"""
     if username != request.user.username:
         try:
             user = User.objects.select_related('profile').get(
@@ -36,7 +36,6 @@ def suggestions_user(request, username):
                                },
                               context_instance = RequestContext(request))
 
-
 @login_required
 def suggestion_edit(request, slug):
     """
@@ -56,10 +55,10 @@ def suggestion_detail(request, slug):
     VIEW DETAILS FROM A SUGGESTION
     """
     try:
-        suggestion = Suggestion.objects.select_related('user', 
+        suggestion = Suggestion.objects.has_voted(request.user
+                                                    ).select_related('user', 
                                                        'place__city__region__country',
-                                                       ).has_voted(request.user
-                                                                   ).get(slug=slug.lower(), _vis='public')
+                                                       ).get(slug=slug.lower())
     except Suggestion.DoesNotExist:
         raise Http404
     if not suggestion._is_public() and suggestion.user_id != request.user.id:
@@ -70,11 +69,11 @@ def suggestion_detail(request, slug):
 
 
 @login_required
-def suggestion_add(request):
+def suggestion_new(request):
     """
     ADD A NEW SUGGESTION
     """
-    return render_to_response('events/suggestion_add.html', 
+    return render_to_response('events/suggestion_new.html', 
                               {},
                               context_instance = RequestContext(request))
 

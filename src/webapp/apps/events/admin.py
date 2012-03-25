@@ -18,7 +18,7 @@ class EventFollowerInline(generic.GenericStackedInline):
 class SuggestionAdmin(VersionAdmin):
     inlines = (EventFollowerInline,)
     model = Suggestion
-    fields = ['_vis', 'name', 'description', 'user', 'place', 'done', 'date_starts', 'date_ends', '_short_url', 'counter_followers', 'location']
+    fields = ['slug', '_vis', 'name', 'description', 'user', 'place', 'done', 'date_starts', 'date_ends', '_short_url', 'counter_followers', 'location', 'created', 'modified']
     readonly_fields  = ['created', 'modified', 'slug', 'location']
     
     

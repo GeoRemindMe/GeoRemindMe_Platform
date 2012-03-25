@@ -4,6 +4,7 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
@@ -11,7 +12,6 @@ class Migration(SchemaMigration):
         # Adding model 'Revision'
         db.create_table('reversion_revision', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('manager_slug', self.gf('django.db.models.fields.CharField')(default='default', max_length=200, db_index=True)),
             ('date_created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, blank=True)),
             ('comment', self.gf('django.db.models.fields.TextField')(blank=True)),
@@ -23,15 +23,12 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('revision', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['reversion.Revision'])),
             ('object_id', self.gf('django.db.models.fields.TextField')()),
-            ('object_id_int', self.gf('django.db.models.fields.IntegerField')(db_index=True, null=True, blank=True)),
             ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
             ('format', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('serialized_data', self.gf('django.db.models.fields.TextField')()),
             ('object_repr', self.gf('django.db.models.fields.TextField')()),
-            ('type', self.gf('django.db.models.fields.PositiveSmallIntegerField')(db_index=True)),
         ))
         db.send_create_signal('reversion', ['Version'])
-
 
     def backwards(self, orm):
         
@@ -40,7 +37,6 @@ class Migration(SchemaMigration):
 
         # Deleting model 'Version'
         db.delete_table('reversion_version')
-
 
     models = {
         'auth.group': {
@@ -84,7 +80,6 @@ class Migration(SchemaMigration):
             'comment': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'date_created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'manager_slug': ('django.db.models.fields.CharField', [], {'default': "'default'", 'max_length': '200', 'db_index': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'})
         },
         'reversion.version': {
@@ -93,26 +88,9 @@ class Migration(SchemaMigration):
             'format': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'object_id': ('django.db.models.fields.TextField', [], {}),
-            'object_id_int': ('django.db.models.fields.IntegerField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
             'object_repr': ('django.db.models.fields.TextField', [], {}),
             'revision': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['reversion.Revision']"}),
-            'serialized_data': ('django.db.models.fields.TextField', [], {}),
-            'type': ('django.db.models.fields.PositiveSmallIntegerField', [], {'db_index': 'True'})
-        },
-        'timelines.timeline': {
-            'Meta': {'object_name': 'Timeline'},
-            'actor_c_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['contenttypes.ContentType']"}),
-            'actor_id': ('django.db.models.fields.IntegerField', [], {}),
-            'created': ('modules.timezones.fields.LocalizedDateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'message': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'modified': ('modules.timezones.fields.LocalizedDateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'msg_id': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
-            'objetive_c_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['contenttypes.ContentType']"}),
-            'objetive_id': ('django.db.models.fields.IntegerField', [], {}),
-            'result_c_type': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': "orm['contenttypes.ContentType']"}),
-            'result_id': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'visible': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+            'serialized_data': ('django.db.models.fields.TextField', [], {})
         }
     }
 

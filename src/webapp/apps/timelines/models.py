@@ -508,7 +508,7 @@ try:
             setattr(Follower, 'users_as_%s' % (field), None)
         generic.GenericRelation(TimelineFollower, 
                                     content_type_field="follower_c_type",
-                                    object_id_field='follwer_id',
+                                    object_id_field='follower_id',
                                     related_name='timelinesfollowers_as_follower'
                                     ).contribute_to_class(model, 'timelinefollowees')
         setattr(TimelineFollower, 'timelinefollowers' % (field), None)

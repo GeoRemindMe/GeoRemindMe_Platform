@@ -95,7 +95,7 @@ class SuggestionManager(models.GeoManager, VotableManager):
         
 
 class Suggestion(Event, Visibility):
-    slug = AutoSlugField(populate_from=['name', 'place'], max_length = 50, unique=True)
+    slug = AutoSlugField(populate_from=['name', 'place'], max_length = 50, unique=True, editable=True)
     _short_url = models.URLField(_(u"Atajo en vavag"), blank=True, default='')
     counter_followers = PositiveCounterField(_(u"Contador de seguidores"),
                                             default=0,
@@ -164,6 +164,13 @@ class Suggestion(Event, Visibility):
                                      use_natural_keys=kwargs.pop("use_natural_keys", True),
                                      **kwargs)
         return data
+    
+    def serialize(self):
+        json_serializer = serializers.get_serializer("json")()
+        return json_serializer.serialize([self], 
+                                     ensure_ascii= False, 
+                                     use_natural_keys=True,
+                                     )
     
     def natural_key(self):
         return [self.pk, self.name, self.place]

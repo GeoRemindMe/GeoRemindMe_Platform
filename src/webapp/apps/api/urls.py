@@ -11,5 +11,6 @@ urlpatterns = patterns('',
                        url(r'^1/', 
                            jsonrpc_site.dispatch, 
                            name='jsonrpc_mountpoint'),
+                       url('^2/', include('apps.api.v2.suggestion.routes')),
                        
 )

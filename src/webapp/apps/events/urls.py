@@ -6,12 +6,12 @@ import views as suggestions_views
 
 
 urlpatterns = patterns('',
-    # mochila
+    # backpack
     url(r'^!/(?P<username>[\.\w]+)/suggestions/$',
        suggestions_views.suggestions_user,
        name='events_suggestions_user'),
     # Ver sugerencia
-    url(r'^suggestion/(?P<slug>[-\w]+)/$',
+    url(r'^suggestion/(?P<slug>[^/]+)/$',
        suggestions_views.suggestion_detail,
        name='events_suggestion_detail'),
     # Editar sugerencia
@@ -19,8 +19,8 @@ urlpatterns = patterns('',
        suggestions_views.suggestion_edit,
        name='events_suggestion_edit'),
     # Añadir sugerencias
-    url(r'^suggestions/add/$',
-       suggestions_views.suggestion_add,
+    url(r'^suggestions/new/$',
+       suggestions_views.suggestion_new,
        name='events_suggestion_add'),
     # Listar sugerencias
     url(r'^suggestions/$',
