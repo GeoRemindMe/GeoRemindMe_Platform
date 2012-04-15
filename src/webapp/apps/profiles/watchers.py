@@ -24,6 +24,6 @@ def new_user_registered(sender, instance, created, **kwargs):
         Timeline.objects.add_timeline(actor=instance, 
                                       msg_id=0,
                                       objetive=instance,
-                                      visible=True,
+                                      visible=False,
                                       )
         DEBUG('TIMELINE: creado nuevo usuario %s' % instance)

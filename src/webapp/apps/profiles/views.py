@@ -57,7 +57,7 @@ def profile_edit(request, username):
 def profile_detail(request, username, extra_context=None):
     try:
         user = User.objects.select_related('profile').get(
-                                                      username__iexact=username
+                                                      username=username
                                                       )
     except User.DoesNotExist:
         raise Http404
