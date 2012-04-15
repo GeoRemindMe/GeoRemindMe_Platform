@@ -165,3 +165,32 @@ class Views(object):
             response[header] = value
 
         return response
+    
+    def _notfound(self, request):
+       return self._render(
+                           request = request,
+                           status = 404
+                           )
+       
+    def _loginrequired(self, request):
+        return self._render(
+                            request = request,
+                            template = 'mainApp/home', 
+                            context = {'logged' : False,
+                                       'next': request.path,
+                                       },
+                            status = 403,
+                            )
+       
+    def _forbidden(self, request):
+       return self._render(
+                           request = request,
+                           status = 403
+                           )
+    
+    def _badrequest(self, error):
+        return self._render(
+                           request = request,
+                           context = {'error': error},
+                           status = 406
+                           )

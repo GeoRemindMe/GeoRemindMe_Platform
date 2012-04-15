@@ -1,6 +1,18 @@
+# coding=utf-8
+
 from functools import wraps
+from django.conf import settings
 
 from respite.urls import routes
+
+
+def login_required(method):
+    def wrapper(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            return method(self, request, *args, **kwargs)
+        return self._loginrequired(request)
+    return wrapper
+        
 
 def override_supported_formats(formats):
     """

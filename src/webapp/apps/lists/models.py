@@ -6,13 +6,12 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
-from modules.timezones.fields import LocalizedDateTimeField
 from webapp.site.models_utils import Visibility
 from webapp.site.funcs import INFO
 
 from timelines.models import Timeline
 from events.models import Suggestion
-from fields import PositiveCounterField
+from libs.fields import PositiveCounterField
 from signals import * #@UnusedWildImport
 
 
@@ -36,8 +35,8 @@ class ListGeneric(models.Model):
     description = models.TextField(_(u"Descripcion"))
     user = models.ForeignKey('auth.User', verbose_name=_(u"Usuario"))
     
-    created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
+    created = models.DateTimeField(_(u"Creado"), auto_now_add=True)
+    modified = models.DateTimeField(_(u"Modificado"), auto_now=True)
     
     
     class Meta:
@@ -127,8 +126,8 @@ class ListSuggestion(ListGeneric, Visibility):
 class SuggestionInList(models.Model):
     listsuggestion = models.ForeignKey(ListSuggestion)
     suggestion = models.ForeignKey(Suggestion)
-    created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
+    created = models.DateTimeField(_(u"Creado"), auto_now_add=True)
+    modified = models.DateTimeField(_(u"Modificado"), auto_now=True)
     
     class Meta:
         unique_together = ('listsuggestion','suggestion')
@@ -144,8 +143,8 @@ class ListFollower(models.Model):
                                     related_name = "list_followers")
     list_id = models.PositiveIntegerField(_(u"Identificador de la lista seguida"))
     list_instance = generic.GenericForeignKey('list_c_type', 'list_id',) # clave generica para cualquier modelo
-    created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
+    created = models.DateTimeField(_(u"Creado"), auto_now_add=True)
+    modified = models.DateTimeField(_(u"Modificado"), auto_now=True)
     
     class Meta:
         get_latest_by = "created"

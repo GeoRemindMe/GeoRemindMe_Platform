@@ -9,7 +9,7 @@ from celery.task import task
 import models as timelines_models
 
 
-@task
+#@task
 def share_timeline(timeline):
     if timeline.visible:
         followers = timelines_models.Follower.objects.get_by_followee(followee = timeline.actor,
@@ -24,5 +24,5 @@ def share_timeline(timeline):
 
 @receiver(post_save, sender=timelines_models.Timeline, dispatch_uid="timeline_sharing")
 def watcher_share_timeline(sender, instance, created, **kwargs):
-    if created:
+    if created and instance.actor_id != -2:
         share_timeline.delay(instance)

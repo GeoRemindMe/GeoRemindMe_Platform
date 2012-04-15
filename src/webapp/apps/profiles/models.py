@@ -7,17 +7,13 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import F
 from django.db import transaction
-from timezones.fields import TimeZoneField
 from userena.models import UserenaLanguageBaseProfile
 from userena.managers import UserenaBaseProfileManager
 from userena.utils import get_gravatar
 from socialregistration.contrib.facebook.models import FacebookProfile
 from socialregistration.contrib.twitter.models import TwitterProfile
 
-from fields import PositiveCounterField
-
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^timezones.fields.TimeZoneField",])
+from libs.fields import PositiveCounterField
 
 
 class UserProfileManager(UserenaBaseProfileManager):
@@ -95,7 +91,7 @@ class UserProfile(UserenaLanguageBaseProfile):
                                                     )
     last_location = models.PointField(_(u"Ultima localización usada"), blank=True, null=True)
     favorite_location = models.PointField(_(u"Localización favorita"), blank=True, null=True)
-    timezone = TimeZoneField(_(u"Zona horaria"))
+    timezone = models.CharField(_(u"Zona horaria"), default='Europe/Madrid', max_length=256)
     
     objects = UserProfileManager()
     

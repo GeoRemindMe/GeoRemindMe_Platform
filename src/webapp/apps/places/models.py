@@ -7,8 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.gis.measure import D
 
 from modules.taggit.managers import TaggableManager
-from modules.timezones.fields import LocalizedDateTimeField
-from fields import AutoSlugField
+from libs.fields import AutoSlugField
 from modules.cities.models import Country, Region, City
 
 
@@ -119,8 +118,8 @@ class Place(models.Model):
                                             unique = True)
     url = models.URLField(_(u"Web"), blank=True)
     _short_url = models.URLField(_(u"Atajo en vavag"), blank=True, default='')
-    created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
+    created = models.DateTimeField(_(u"Creado"), auto_now_add=True)
+    modified = models.DateTimeField(_(u"Modificado"), auto_now=True)
     
     objects = PlaceManager()
     tags = TaggableManager()

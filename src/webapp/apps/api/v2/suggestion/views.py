@@ -14,7 +14,6 @@ from apps.lists.models import ListSuggestion
 
 
 
-
 class SuggestionViews(Views):
     supported_formats = ['json', 'xml']
     

@@ -18,6 +18,7 @@
 {% block body %}
     <div {% block id %} {%endblock%} class="clear">
         {% block pre_chronology %} {%endblock%}
+        {% with objects as timelines %}
         {% if timelines|length %}    
             <ul id="tabMenu" class="clear">
                 <li class="clear-box">Ver:</li>
@@ -37,7 +38,8 @@
             {% endif %}    
             
             
-        {% endif %}    
+        {% endif %}  
+        {% endwith %}  
     
         
         {% block pos_chronology %}{%endblock%}

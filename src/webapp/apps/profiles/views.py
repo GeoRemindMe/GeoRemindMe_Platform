@@ -18,17 +18,11 @@ from models import UserProfile
 
 
 @login_required
-@page_template("profiles/dashboard_index_page.html")
+@page_template("generic/timeline.html")
 def dashboard(request, extra_context=None):
-#    try:
-#        request.user.get_profile()
-#    except:
-#        UserProfile.objects.create(user=request.user)
-#    Timeline.objects.add_timeline(request.user, 0, request.user, visible=True)
     context = {
                'objects' : request.user.get_chronology(),
                }
-     
     if extra_context is not None:
         context.update(extra_context)
     return render_to_response("profiles/dashboard.html",
@@ -43,11 +37,6 @@ def notifications(request, extra_context=None):
                'objects': request.user.get_notifications()
                }
     UserProfile.objects.set_notifications(request.user, value=-10)
-#    UserProfile.objects.filter(
-#                               user = request.user
-#                               ).update(
-#                                       counter_notifications = F('counter_notifications') - 10
-#                                       )
     if extra_context is not None:
         context.update(extra_context)
     return render_to_response("profiles/notifications.html",

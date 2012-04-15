@@ -10,7 +10,7 @@ from timelines.models import Timeline, TimelineNotification
 from models import Suggestion, EventFollower
 from profiles.models import UserProfile
 from signals import * #@UnusedWildImport
-from funcs import DEBUG
+from funcs import DEBUG, INFO
 
 @transaction.commit_on_success()
 @receiver(suggestion_new, sender=Suggestion)
@@ -27,12 +27,13 @@ def new_suggestion(sender, instance, created, **kwargs):
                                       result = f,
                                       visible = True if instance._is_public() else False)
         UserProfile.objects.set_suggested(instance.user)
-        DEBUG('TIMELINE: creada nueva sugerencia %s' % instance)
+        INFO('SUGGESTION: new %s - %s' % (instance.name, instance.user.id))
         
         
 @receiver(pre_delete, sender=Suggestion)
 def deleted_suggestion(sender, instance, **kwargs):
     UserProfile.objects.set_suggested(instance.user, value=-1)
+    INFO('SUGGESTION: delete %s - %s' % (instance.name, instance.user.id))
         
 
 @transaction.commit_on_success()        
@@ -48,7 +49,7 @@ def added_suggestion_following(sender, instance, created, **kwargs):
         UserProfile.objects.set_supported(instance.user)
         instance.event.__class__.objects.set_followers(instance.event)
     
-    DEBUG('TIMELINE: usuario %s sigue evento %s' % (instance.user, instance))
+    INFO('SUGGESTION: newfollower %s - %s' % (instance.event.name, instance.user.id))
     
     
 @transaction.commit_on_success()
@@ -56,10 +57,11 @@ def added_suggestion_following(sender, instance, created, **kwargs):
 def deleted_suggestion_following(sender, instance, **kwargs):
     UserProfile.objects.set_supported(instance.user, value=-1)
     instance.event.__class__.objects.set_followers(instance.event, value=-1)
-    DEBUG('TIMELINE: usuario %s deja de seguir evento %s' % (instance.user, instance))
+    INFO('SUGGESTION: deletefollower %s - %s' % (instance.event.name, instance.user.id))
     
     
 @receiver(pre_save, sender=Suggestion)
 def suggestion_modified(sender, instance, raw, **kwargs):
     if not raw and instance.place is not None:
         instance.location = instance.place.location
+    INFO('SUGGESTION: modify %s - %s' % (instance.event.name, instance.user.id))

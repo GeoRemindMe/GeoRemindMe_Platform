@@ -11,7 +11,7 @@ from django.db.models import Q
 
 from models import Timeline, NotificationSettings, TimelineNotification, Follower
 from profiles.models import UserProfile
-from funcs import DEBUG
+from funcs import INFO
         
 
 @receiver(post_save, sender=User)
@@ -35,16 +35,15 @@ def new_follower(sender,  instance, created, **kwargs):
         UserProfile.objects.set_followers(user=instance.followee) # incrementa el contador del followee
         UserProfile.objects.set_followings(user=instance.follower) # incrementa el contador del follower
         TimelineNotification.objects.add_notification(timeline=t, user = instance.followee)
-        
-        DEBUG('TIMELINE: %s ahora sigue a %s' % (instance.follower, instance.followee))
-          
+        INFO('TIMELINE: newfollower %s - %s' % (instance.follower_id, instance.followee_id))
+
 
 @receiver(pre_delete, sender=Follower)
 def deleted_follower(sender, instance, **kwargs):
     UserProfile.objects.set_followers(user=instance.followee, value=-1)
     UserProfile.objects.set_followings(user=instance.follower, value=-1)
     
-    DEBUG('TIMELINE: %s ya no sigue a %s' % (instance.follower, instance.followee))
+    INFO('TIMELINE: deletefollower %s - %s' % (instance.follower_id, instance.followee_id))
 
 
 #@receiver(pre_delete)

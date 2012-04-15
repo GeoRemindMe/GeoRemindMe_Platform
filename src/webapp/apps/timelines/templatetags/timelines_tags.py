@@ -18,12 +18,9 @@ class RenderTimelineNode(template.Node):
         self.item = template.Variable(item)
         
     def render(self, context):
-        try:
-            item = self.item.resolve(context)
-            t = template.loader.get_template('timeline/%s.html' % item.msg_id)
-            context['obj'] = item
-            return t.render(context)
-        except Exception, e:
-            raise
+        item = self.item.resolve(context)
+        t = template.loader.get_template('timeline/%s.html' % item.msg_id)
+        context['obj'] = item
+        return t.render(context)
         
 

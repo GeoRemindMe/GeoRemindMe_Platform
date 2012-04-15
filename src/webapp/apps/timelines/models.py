@@ -8,7 +8,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import F, Q
 
-from modules.timezones.fields import LocalizedDateTimeField
 from modules.efficient.utils import get_generic_relations
 from modules.voty.votablemanager import VotableManager
 from modules.voty.models import Vote
@@ -114,9 +113,9 @@ class Follower(models.Model):
     followee_id = models.IntegerField(_(u"Identificador del seguido"))
     followee = generic.GenericForeignKey('followee_c_type', 'followee_id',) # clave generica para cualquier modelo
     
-    modified = LocalizedDateTimeField(_(u"Modificado"),
+    modified = models.DateTimeField(_(u"Modificado"),
                                       auto_now=True)
-    created = LocalizedDateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
     objects = FollowerManager()
     
     class Meta:
@@ -158,9 +157,9 @@ class TimelineManager(VotableManager):
                                 visible = visible,
                                 **kwargs
                                 )
-        TimelineFollower(timeline = timeline,
-                         follower = actor
-                         )
+        TimelineFollower.objects.create(timeline = timeline,
+                                        follower = actor
+                                        )
         return timeline
         
     def del_all_timelines(self, actor, msg_id, objetive):
@@ -184,8 +183,8 @@ class TimelineManager(VotableManager):
             :returns: Iterator
             
         """
-        q= objetive.objetive_timelines.filter(visible=visible).order_by('-modified')
-        return get_generic_relations(q, ['actor', 'objetive', 'result'])
+        q = objetive.objetive_timelines.filter(visible=visible).prefetch_related().order_by('-modified')
+        return q
     
     def get_by_user(self, user, visible=True, all=False):
         """
@@ -202,10 +201,10 @@ class TimelineManager(VotableManager):
         else:
             actor = user
         
-        q = actor.actor_timelines.get_query_set().order_by('-modified')
+        q = actor.actor_timelines.get_query_set().prefetch_related().order_by('-modified')
         if not all: # todo el timeline, visible y no visible
             q = q.filter(visible=visible)
-        return get_generic_relations(q, ['actor', 'objetive', 'result'])
+        return q
     
     def get_chronology(self, user):
         """
@@ -220,9 +219,9 @@ class TimelineManager(VotableManager):
             actor = user
         actor_ct = ContentType.objects.get_for_model(actor)
 
-        q = self.has_voted(user).filter(timelinefollowers__follower_c_type = actor_ct,
-                                       timelinefollowers__follower_id = actor.id).order_by('-modified')[:10]
-        return get_generic_relations(q, ['actor', 'objetive', 'result'])
+        q = self.filter(timelinefollowers__follower_c_type = actor_ct,
+                                       timelinefollowers__follower_id = actor.id).prefetch_related().order_by('-modified')
+        return q
     
     def has_voted(self, user):
         if not user.is_authenticated():
@@ -350,9 +349,9 @@ class Timeline(models.Model):
     visible = models.BooleanField(_(u"Visible en perfil publico"),
                                   default=True,
                                   )
-    created = LocalizedDateTimeField(_(u"Creado"),
+    created = models.DateTimeField(_(u"Creado"),
                                    auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"),
+    modified = models.DateTimeField(_(u"Modificado"),
                                       auto_now=True)
     
     objects = TimelineManager()
@@ -374,17 +373,17 @@ class Timeline(models.Model):
 #------------------------------------------------------------------------------ 
 
 
-class TimelineFollowerManager(models.Manager):
-    @transaction.commit_manually
-    def bulk_create(self, instances):
-        # TODO : EN VERSION DE DESARROLLO DE DJANGO, YA EXISTE, INSERTA OBJETOS POR LOTES
-        try:
-            for instance in instances:
-                instance.save()
-        except:
-            transaction.rollback()
-        else:
-            transaction.commit()
+#class TimelineFollowerManager(models.Manager):
+##    @transaction.commit_manually
+##    def bulk_create(self, instances):
+##        # TODO : EN VERSION DE DESARROLLO DE DJANGO, YA EXISTE, INSERTA OBJETOS POR LOTES
+##        try:
+##            for instance in instances:
+##                instance.save()
+##        except:
+##            transaction.rollback()
+##        else:
+##            transaction.commit()
         
 
 class TimelineFollower(models.Model):
@@ -399,10 +398,10 @@ class TimelineFollower(models.Model):
     follower_id = models.IntegerField(_(u"Identificador del seguidor"))
     follower = generic.GenericForeignKey('follower_c_type', 'follower_id',) # clave generica para cualquier modelo
     
-    created = LocalizedDateTimeField(auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"),
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(_(u"Modificado"),
                                       auto_now=True)
-    objects = TimelineFollowerManager()
+#    objects = TimelineFollowerManager()
     
     class Meta:
         get_latest_by = "created"
@@ -411,7 +410,7 @@ class TimelineFollower(models.Model):
         verbose_name_plural = _(u"Seguidores de Timelines")
         
     def __unicode__(self):
-        return "%s - %d - %s" % (self.follower, self.timeline_id, self.created)
+        return "%s - %d - %s" % (self, self.timeline_id, self.created)
     
 
 
@@ -455,8 +454,8 @@ class TimelineNotification(models.Model):
     actor_id = models.IntegerField(_(u"Identificador del seguidor"))
     actor = generic.GenericForeignKey('actor_c_type', 'actor_id',) # clave generica para cualquier modelo
     
-    created = LocalizedDateTimeField(auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"),
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(_(u"Modificado"),
                                       auto_now=True)
     
     objects = TimelineNotificationManager()

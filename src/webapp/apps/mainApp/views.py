@@ -6,11 +6,11 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 
-def home(request, login=False):
+def home(request, logged=False):
     if request.user.is_authenticated():
             return HttpResponseRedirect(reverse('profiles_dashboard'))
     return render_to_response("mainApp/home.html", 
-                              {'login' : login}, 
+                              {'logged' : logged}, 
                               context_instance=RequestContext(request)
                               )
     

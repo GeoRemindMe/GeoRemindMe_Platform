@@ -10,7 +10,6 @@ from django.db.models import F
 from django.contrib.gis.geos import Point
 from django.core import serializers
 
-from modules.timezones.fields import LocalizedDateTimeField
 from modules.taggit.managers import TaggableManager
 from places.models import Place
 from timelines.models import Timeline
@@ -18,20 +17,19 @@ from signals import suggestion_new
 from webapp.site.models_utils import Visibility
 from modules.voty.votablemanager import VotableManager
 
-from funcs import INFO
-from fields import AutoSlugField, PositiveCounterField
+from libs.fields import AutoSlugField, PositiveCounterField
 
 
 class Event(models.Model):
     name = models.CharField(_(u"Nombre"), max_length=170)
     description = models.TextField(_(u"Descripción"), max_length=1024, blank=True)
     user = models.ForeignKey(User, verbose_name=_(u"Usuario"))
-    created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
+    created = models.DateTimeField(_(u"Creado"), auto_now_add=True)
+    modified = models.DateTimeField(_(u"Modificado"), auto_now=True)
     place = models.ForeignKey(Place, verbose_name=_(u"Sitio"))
     location = models.PointField(_(u"Localización (no tocar)"), blank=True, null=True)
-    date_starts = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True, null=True)
-    date_ends = LocalizedDateTimeField(_(u"Fecha finalización"), blank=True, null=True)
+    date_starts = models.DateTimeField(_(u"Fecha finalización"), blank=True, null=True)
+    date_ends = models.DateTimeField(_(u"Fecha finalización"), blank=True, null=True)
     done = models.BooleanField(_(u"Finalizado"), default=False)
     
     class Meta:
@@ -53,7 +51,6 @@ class SuggestionManager(models.GeoManager, VotableManager):
             del kwargs['to_twitter']
         obj = super(self.__class__, self).create(**kwargs)
         suggestion_new.send(sender=obj.__class__, instance=obj, created = True, to_facebook=to_facebook, to_twitter=to_twitter)
-        INFO("SUGERENCIA: creada nueva sugerencia %s %s" % (obj.id, obj.name))
         return obj
         
     def get_backpack(self, follower):
@@ -187,8 +184,8 @@ class EventFollower(models.Model):
     event_id = models.PositiveIntegerField(_(u"Identificador del evento seguido"))
     event = generic.GenericForeignKey('event_c_type', 'event_id',) # clave generica para cualquier modelo
     done = models.BooleanField(_(u"Hecho"), default=False)
-    created = LocalizedDateTimeField(_(u"Creado"), auto_now_add=True)
-    modified = LocalizedDateTimeField(_(u"Modificado"), auto_now=True)
+    created = models.DateTimeField(_(u"Creado"), auto_now_add=True)
+    modified = models.DateTimeField(_(u"Modificado"), auto_now=True)
     
     class Meta:
         get_latest_by = "-created"
