@@ -17,7 +17,7 @@ from signals import suggestion_new
 from webapp.site.models_utils import Visibility
 from modules.voty.votablemanager import VotableManager
 
-from libs.fields import AutoSlugField, PositiveCounterField
+from fields import AutoSlugField, PositiveCounterField
 
 
 class Event(models.Model):
