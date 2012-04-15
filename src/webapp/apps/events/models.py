@@ -10,7 +10,8 @@ from django.db.models import F
 from django.contrib.gis.geos import Point
 from django.core import serializers
 
-from modules.taggit.managers import TaggableManager
+
+#from modules.taggit.managers import TaggableManager
 from places.models import Place
 from timelines.models import Timeline
 from signals import suggestion_new
@@ -118,7 +119,7 @@ class Suggestion(Event, Visibility):
         if self._short_url == '':
             from django.contrib.sites.models import Site
             from libs.vavag import VavagRequest
-            from django.conf import settings
+            
             try:
                 current_site = Site.objects.get_current()
                 client = VavagRequest(settings.VAVAG_PASSWORD['user'], settings.VAVAG_PASSWORD['key'])
