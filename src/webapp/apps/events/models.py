@@ -89,6 +89,11 @@ class SuggestionManager(models.GeoManager, VotableManager):
         return self.get_query_set().filter(location__distance_lte=(point, D(m=accuracy))
                                            ).select_related('user', 'place__city').distance(point).order_by('distance')
                                            
+    def by_get_natural_key(self, pk, name, place):
+        return self.get(pk = pk,
+                        name = name,
+                        place_id = place)
+                                           
 
         
 
@@ -164,16 +169,18 @@ class Suggestion(Event, Visibility):
         return data
     
     def serialize(self):
-        json_serializer = serializers.get_serializer("json")()
-        return json_serializer.serialize([self], 
-                                     ensure_ascii= False, 
-                                     use_natural_keys=True,
-                                     )
+        return {
+                'pk': self.pk,
+                'name': self.name,
+                'place': self.place.natural_key,
+                'user': self.user.natura_key,
+                'distance': self.distance
+                }
     
     def natural_key(self):
-        return [self.pk, self.name, self.place]
-    natural_key.dependencies = ['places.Place']
-                                     
+        return [self.pk, self.name, self.place_id]
+    #natural_key.dependencies = ['places.Place']
+    
 
 #------------------------------------------------------------------------------ 
 class EventFollower(models.Model):

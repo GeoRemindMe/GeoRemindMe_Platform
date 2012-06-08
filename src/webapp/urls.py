@@ -20,7 +20,6 @@ urlpatterns = patterns('',
    url(r'', include('lists.urls')), # events
    url(r'ajax/', include('timelines.ajax_urls')), # timelines AJAX
    url(r'ajax/', include('profiles.ajax_urls')), # profiles AJAX
-   url(r'ajax/', include('events.ajax_urls')), # events AJAX
    url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict, 'jsi18n'), # i18n para javascript
    #url(r'^accounts/', include('userena.urls')), # userena
    url(r'^messages/', include('userena.contrib.umessages.urls')), # framework de mensajes de userena

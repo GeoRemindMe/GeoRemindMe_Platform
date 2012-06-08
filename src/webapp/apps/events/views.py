@@ -162,7 +162,7 @@ class SuggestionViews(Views):
 
     @login_required
     @override_supported_formats(['json', 'xml'])
-    def delete(self, request, id):
+    def destroy(self, request, id):
         try:
             suggestion = Suggestion.objects.get(pk=id, user=request.user)
         except Suggestion.DoesNotExist:
@@ -170,7 +170,7 @@ class SuggestionViews(Views):
         deleted = suggestion.delete()
         return self._render(
                             request = request,
-                            context = {'suggestions': suggestions},
+                            context = {'deleted': deleted},
                             status = 200
                             )
         

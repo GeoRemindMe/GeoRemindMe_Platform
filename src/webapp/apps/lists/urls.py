@@ -16,6 +16,13 @@ urlpatterns = resource(
                  method = 'GET',
                  name = 'lists_suggestion_add'
             ),
+            # Route to add a new suggestion
+            routes.route(
+                 regex = r'^ls(?:\.[a-zA-Z]+)?/$',
+                 view = 'create',
+                 method = 'POST',
+                 name = 'events_suggestion_new'
+            ),
             # Route to list
             routes.route(
                 regex = r'^ls/(?P<id>[0-9]+)(?:\.[a-zA-Z]+)?/$',

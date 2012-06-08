@@ -87,7 +87,7 @@ urlpatterns = resource(
         # Route to form to edit a existing suggestion
         routes.route(
             regex = r'^suggestion/(?P<id>[0-9]+)(?:\.[a-zA-Z]+)?/$',
-            view = 'delete',
+            view = 'destroy',
             method = 'DELETE',
             name = 'events_suggestion_delete'
         ),

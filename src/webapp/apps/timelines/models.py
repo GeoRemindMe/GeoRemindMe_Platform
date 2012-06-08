@@ -490,7 +490,7 @@ try:
                                                               opts.module_name,
                                                            field), None)
             
-        # south fails migrating with this code :)
+    # south fails migrating with this code :)
     GenericModelsFollowers = ['auth.User']
     # from django-activity-stream
     
