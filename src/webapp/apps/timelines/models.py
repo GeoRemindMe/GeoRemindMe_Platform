@@ -387,6 +387,15 @@ class Timeline(models.Model):
         
 
 class TimelineFollower(models.Model):
+    """
+        Relaciona los seguidores con cada mensaje que deberian recibir
+
+        De esta forma el unico coste adicional es la generacion de los indices.
+        Ademas permite que un usuario borre mensajes del timeline sin problemas.
+
+        En vez de esta tabla, podria usarse un JOIN con Timeline - Followers, pero
+        con esto la consulta es mas simple y el unico coste es la construccion de indices.
+    """
     timeline = models.ForeignKey(Timeline,
                                  verbose_name = _(u"Timeline follower"),
                                  related_name = "timelinefollowers"
